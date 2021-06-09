@@ -1,5 +1,7 @@
 #pragma once
 
+#include "addressing_mode.cpp"
+
 class System;
 
 class Cpu
@@ -20,9 +22,11 @@ private:
     void updateZeroAndNegativeFlag(unsigned char result);
     void print();
 
-    void lda();
+    void lda(AddressingMode addressingMode);
     void tax();
     void inx();
+
+    unsigned short getAddress(AddressingMode addressingMode);
 
     System *system;
 

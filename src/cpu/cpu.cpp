@@ -14,13 +14,15 @@ Cpu::Cpu(System *system)
 }
 
 // Called when new cartridge inserted
-void Cpu::resetInterrupt() {
+void Cpu::resetInterrupt()
+{
     pc = system->memory.read_16(system->RESET_VECTOR_ADDR);
     resetState();
 }
 
 // Reset flags and registers
-void Cpu::resetState() {
+void Cpu::resetState()
+{
     status = 0;
     a = 0;
     x = 0;
@@ -45,8 +47,12 @@ void Cpu::execOpCode(unsigned char opCode)
     {
     case 0x00:
         return; // BRK;
+    case 0xa5:
+        return lda(ZERO_PAGE);
     case 0xa9:
-        return lda();
+        return lda(IMMEDIATE);
+    case 0xb5:
+        return lda(ZERO_PAGE_X);
     case 0xaa:
         return tax();
     case 0xe8:
@@ -57,9 +63,10 @@ void Cpu::execOpCode(unsigned char opCode)
 }
 
 // Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
-void Cpu::lda()
+void Cpu::lda(AddressingMode addressingMode)
 {
-    a = system->memory.read(++pc);
+    pc++;
+    a = system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(a);
 }
 
@@ -92,10 +99,24 @@ void Cpu::updateZeroAndNegativeFlag(unsigned char result)
         status = status & 0b10111111;
 }
 
+unsigned short Cpu::getAddress(AddressingMode addressingMode)
+{
+    switch (addressingMode)
+    {
+    case IMMEDIATE:
+        return pc;
+    case ZERO_PAGE:
+        return system->memory.read(pc);
+    case ZERO_PAGE_X:
+        unsigned char v = getAddress(ZERO_PAGE);
+        return v + x;
+    }
+}
+
 void Cpu::print()
 {
     std::cout << "Program Counter: " << pc << std::endl;
-    std::cout << "Register A: " << std::hex << (int) a << std::endl;
-    std::cout << "Register X: " << std::hex << (int) x << std::endl;
+    std::cout << "Register A: " << std::hex << (int)a << std::endl;
+    std::cout << "Register X: " << std::hex << (int)x << std::endl;
     std::cout << "Status: " << std::bitset<8>(status) << std::endl;
 }
