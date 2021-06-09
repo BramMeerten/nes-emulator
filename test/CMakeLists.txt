@@ -7,7 +7,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-file(GLOB SRCS *.cpp)
+file(GLOB SRCS cputest.cpp  memorytest.cpp)
 add_executable( NES_TEST ${SRCS} )
 target_link_libraries( NES_TEST NES_LIB gtest_main )
 

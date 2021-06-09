@@ -3,26 +3,34 @@
 #include <iostream>
 
 #include "cpu.h"
+#include "../system.h"
 
 // https://bugzmanov.github.io/nes_ebook/chapter_3_2.html
 
-Cpu::Cpu()
+Cpu::Cpu(System *system)
 {
+    resetState();
+    this->system = system;
+}
+
+// Called when new cartridge inserted
+void Cpu::resetInterrupt() {
+    pc = system->memory.read_16(system->RESET_VECTOR_ADDR);
+    resetState();
+}
+
+// Reset flags and registers
+void Cpu::resetState() {
     status = 0;
     a = 0;
     x = 0;
 }
 
-void Cpu::load(unsigned char data[], int size) {
-    std::copy(data, data+size, memory);
-}
-
 void Cpu::run()
 {
-    pc = 0;
     for (int i = 0; i < 10; i++)
     {
-        unsigned char opCode = memory[pc];
+        unsigned char opCode = system->memory.read(pc);
         execOpCode(opCode);
         pc++;
     }
@@ -51,7 +59,7 @@ void Cpu::execOpCode(unsigned char opCode)
 // Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
 void Cpu::lda()
 {
-    a = memory[++pc];
+    a = system->memory.read(++pc);
     updateZeroAndNegativeFlag(a);
 }
 
