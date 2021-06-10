@@ -62,6 +62,10 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(ZERO_PAGE_X);
     case 0xb6:
         return ldx(ZERO_PAGE_Y);
+    case 0xb9:
+        return lda(ABSOLUTE_Y);
+    case 0xbd:
+        return lda(ABSOLUTE_X);
     case 0xaa:
         return tax();
     case 0xe8:
@@ -138,6 +142,10 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         return getAddress(ZERO_PAGE) + y;
     case ABSOLUTE:
         return system->memory.read_16(pc);
+    case ABSOLUTE_X:
+        return getAddress(ABSOLUTE) + x;
+    case ABSOLUTE_Y:
+        return getAddress(ABSOLUTE) + y;
     }
 }
 

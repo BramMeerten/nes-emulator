@@ -50,7 +50,7 @@ TEST_F(CpuTest, LdaZeroPageXSetsRegisterA)
   EXPECT_EQ(system.cpu.getA(), value[0]);
 }
 
-TEST_F(CpuTest, LdaZAbsoluteSetsRegisterA)
+TEST_F(CpuTest, LdaAbsoluteSetsRegisterA)
 {
   // given
   unsigned char value[1] = {9};
@@ -59,6 +59,34 @@ TEST_F(CpuTest, LdaZAbsoluteSetsRegisterA)
 
   // when
   system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), value[0]);
+}
+
+TEST_F(CpuTest, LdaAbsoluteXSetsRegisterA)
+{
+  // given
+  unsigned char value[1] = {9};
+  system.memory.write(0x1294, value, 1);
+  unsigned char data[6] = {0xa2, 0x60, 0xbd, 0x34, 0x12, 0x00}; // LDX #60, LDA $1234,X;
+
+  // when
+  system.insertDisk(data, 6);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), value[0]);
+}
+
+TEST_F(CpuTest, LdaAbsoluteYSetsRegisterA)
+{
+  // given
+  unsigned char value[1] = {9};
+  system.memory.write(0x1294, value, 1);
+  unsigned char data[6] = {0xa0, 0x60, 0xb9, 0x34, 0x12, 0x00}; // LDY #60, LDA $1234,Y;
+
+  // when
+  system.insertDisk(data, 6);
 
   // then
   EXPECT_EQ(system.cpu.getA(), value[0]);
