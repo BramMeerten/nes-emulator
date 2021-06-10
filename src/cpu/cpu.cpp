@@ -26,6 +26,7 @@ void Cpu::resetState()
     status = 0;
     a = 0;
     x = 0;
+    y = 0;
 }
 
 void Cpu::run()
@@ -47,12 +48,20 @@ void Cpu::execOpCode(unsigned char opCode)
     {
     case 0x00:
         return; // BRK;
+    case 0xa0:
+        return ldy(IMMEDIATE);
+    case 0xa2:
+        return ldx(IMMEDIATE);
     case 0xa5:
         return lda(ZERO_PAGE);
     case 0xa9:
         return lda(IMMEDIATE);
+    case 0xad:
+        return lda(ABSOLUTE);
     case 0xb5:
         return lda(ZERO_PAGE_X);
+    case 0xb6:
+        return ldx(ZERO_PAGE_Y);
     case 0xaa:
         return tax();
     case 0xe8:
@@ -68,6 +77,22 @@ void Cpu::lda(AddressingMode addressingMode)
     pc++;
     a = system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(a);
+}
+
+// Loads a byte of memory into the X register setting the zero and negative flags as appropriate.
+void Cpu::ldx(AddressingMode addressingMode)
+{
+    pc++;
+    x = system->memory.read(getAddress(addressingMode));
+    updateZeroAndNegativeFlag(x);
+}
+
+// Loads a byte of memory into the Y register setting the zero and negative flags as appropriate.
+void Cpu::ldy(AddressingMode addressingMode)
+{
+    pc++;
+    y = system->memory.read(getAddress(addressingMode));
+    updateZeroAndNegativeFlag(y);
 }
 
 // Copies the current contents of the accumulator into the X register and sets the zero and negative flags as appropriate.
@@ -108,8 +133,11 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
     case ZERO_PAGE:
         return system->memory.read(pc);
     case ZERO_PAGE_X:
-        unsigned char v = getAddress(ZERO_PAGE);
-        return v + x;
+        return getAddress(ZERO_PAGE) + x;
+    case ZERO_PAGE_Y:
+        return getAddress(ZERO_PAGE) + y;
+    case ABSOLUTE:
+        return system->memory.read_16(pc);
     }
 }
 

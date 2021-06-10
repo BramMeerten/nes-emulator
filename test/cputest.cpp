@@ -41,10 +41,24 @@ TEST_F(CpuTest, LdaZeroPageXSetsRegisterA)
   // given
   unsigned char value[1] = {9};
   system.memory.write(0x85, value, 1);
-  unsigned char data[6] = {0xa9, 0x80, 0xaa, 0xb5, 0x05, 0x00}; // LDA #80; TAX; LDA $05,X  TODO: replace with LDX #80
+  unsigned char data[6] = {0xa2, 0x80, 0xb5, 0x05, 0x00}; // LDX #80; LDA $05,X 
 
   // when
   system.insertDisk(data, 6);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), value[0]);
+}
+
+TEST_F(CpuTest, LdaZAbsoluteSetsRegisterA)
+{
+  // given
+  unsigned char value[1] = {9};
+  system.memory.write(0x1234, value, 1);
+  unsigned char data[4] = {0xad, 0x34, 0x12, 0x00}; // LDA $1234;
+
+  // when
+  system.insertDisk(data, 4);
 
   // then
   EXPECT_EQ(system.cpu.getA(), value[0]);
@@ -92,7 +106,7 @@ TEST_F(CpuTest, TaxSetsXRegister)
 TEST_F(CpuTest, InxIncreasesTheXRegister)
 {
   // given
-  unsigned char data[5] = {0xa9, 0x80, 0xaa, 0xe8, 0x00}; // LDA #80; TAX; INX  TODO: replace with LDX #80
+  unsigned char data[5] = {0xa2, 0x80, 0xe8, 0x00}; // LDX #80; INX
 
   // when
   system.insertDisk(data, 5);
@@ -100,4 +114,42 @@ TEST_F(CpuTest, InxIncreasesTheXRegister)
   // then
   EXPECT_EQ(system.cpu.getX(), 0x81);
   EXPECT_EQ(system.cpu.getStatus(), 0b0100'0000);
+}
+
+TEST_F(CpuTest, LdxSetsRegisterX)
+{
+  // given
+  unsigned char data[3] = {0xa2, 0x40, 0x00}; // LDX #40
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.cpu.getX(), 0x40);
+}
+
+TEST_F(CpuTest, LdxZeroPageYSetsRegisterX)
+{
+  // given
+  unsigned char value[1] = {9};
+  system.memory.write(0x85, value, 1);
+  unsigned char data[6] = {0xa0, 0x80, 0xb6, 0x05, 0x00}; // LDY #80; LDX $05,Y 
+
+  // when
+  system.insertDisk(data, 6);
+
+  // then
+  EXPECT_EQ(system.cpu.getX(), value[0]);
+}
+
+TEST_F(CpuTest, LdySetsRegisterY)
+{
+  // given
+  unsigned char data[3] = {0xa0, 0x40, 0x00}; // LDY #40
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.cpu.getY(), 0x40);
 }

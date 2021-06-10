@@ -14,6 +14,7 @@ public:
     int getPC() { return pc; };
     unsigned char getA() { return a; };
     unsigned char getX() { return x; };
+    unsigned char getY() { return y; };
     unsigned char getStatus() { return status; };
 
 private:
@@ -23,6 +24,8 @@ private:
     void print();
 
     void lda(AddressingMode addressingMode);
+    void ldx(AddressingMode addressingMode);
+    void ldy(AddressingMode addressingMode);
     void tax();
     void inx();
 
@@ -33,6 +36,7 @@ private:
     unsigned short pc;
     unsigned char a;
     unsigned char x;
+    unsigned char y;
 
     // NVss DIZC
     // N: negative
