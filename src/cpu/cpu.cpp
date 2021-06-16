@@ -48,22 +48,36 @@ void Cpu::execOpCode(unsigned char opCode)
         return ldy(IMMEDIATE);
     case 0xa2:
         return ldx(IMMEDIATE);
+    case 0xa4:
+        return ldy(ZERO_PAGE);
     case 0xa5:
         return lda(ZERO_PAGE);
+    case 0xa6:
+        return ldx(ZERO_PAGE);
     case 0xa9:
         return lda(IMMEDIATE);
+    case 0xac:
+        return ldy(ABSOLUTE);
     case 0xad:
         return lda(ABSOLUTE);
     case 0xb1:
         return lda(INDIRECT_INDEXED);
+    case 0xb4:
+        return ldy(ZERO_PAGE_X);
     case 0xb5:
         return lda(ZERO_PAGE_X);
     case 0xb6:
         return ldx(ZERO_PAGE_Y);
     case 0xb9:
         return lda(ABSOLUTE_Y);
+    case 0xac:
+        return ldy(ABSOLUTE_X);
+    case 0xae:
+        return ldx(ABSOLUTE);
     case 0xbd:
         return lda(ABSOLUTE_X);
+    case 0xbe:
+        return ldx(ABSOLUTE_Y);
     case 0xa1:
         return lda(INDEXED_INDIRECT);
     case 0xaa:
