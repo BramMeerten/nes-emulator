@@ -5,8 +5,6 @@
 #include "cpu.h"
 #include "../system.h"
 
-// https://bugzmanov.github.io/nes_ebook/chapter_3_2.html
-
 Cpu::Cpu(System *system)
 {
     resetState();
@@ -41,13 +39,12 @@ void Cpu::run()
     print();
 }
 
-// http://www.obelisk.me.uk/6502/reference.html
 void Cpu::execOpCode(unsigned char opCode)
 {
     switch (opCode)
     {
     case 0x00:
-        return; // BRK;
+        return; // BRK; TODO
     case 0xa0:
         return ldy(IMMEDIATE);
     case 0xa2:
@@ -58,6 +55,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(IMMEDIATE);
     case 0xad:
         return lda(ABSOLUTE);
+    case 0xb1:
+        return lda(INDIRECT_INDEXED);
     case 0xb5:
         return lda(ZERO_PAGE_X);
     case 0xb6:
@@ -66,6 +65,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(ABSOLUTE_Y);
     case 0xbd:
         return lda(ABSOLUTE_X);
+    case 0xa1:
+        return lda(INDEXED_INDIRECT);
     case 0xaa:
         return tax();
     case 0xe8:
@@ -128,6 +129,7 @@ void Cpu::updateZeroAndNegativeFlag(unsigned char result)
         status = status & 0b10111111;
 }
 
+// TODO update PC were needed
 unsigned short Cpu::getAddress(AddressingMode addressingMode)
 {
     switch (addressingMode)
@@ -137,15 +139,28 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
     case ZERO_PAGE:
         return system->memory.read(pc);
     case ZERO_PAGE_X:
-        return getAddress(ZERO_PAGE) + x;
+        return (getAddress(ZERO_PAGE) + x) % 256;
     case ZERO_PAGE_Y:
-        return getAddress(ZERO_PAGE) + y;
+        return (getAddress(ZERO_PAGE) + y) % 256;
     case ABSOLUTE:
         return system->memory.read_16(pc);
     case ABSOLUTE_X:
         return getAddress(ABSOLUTE) + x;
     case ABSOLUTE_Y:
         return getAddress(ABSOLUTE) + y;
+    // TODO
+    // case INDIRECT: {
+    //     unsigned short value = system->memory.read_16(pc);
+    //     return system->memory.read_16(value);
+    // }
+    case INDEXED_INDIRECT: {
+        unsigned char value = (system->memory.read(pc) + x) % 256;
+        return system->memory.read_16(value);
+    }
+    case INDIRECT_INDEXED: {
+        unsigned char value = system->memory.read(pc);
+        return system->memory.read_16(value) + y;
+    }
     }
 }
 

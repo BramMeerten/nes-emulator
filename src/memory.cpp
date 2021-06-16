@@ -8,6 +8,11 @@ void Memory::write(unsigned short address, unsigned char data[], int length)
     std::copy(data, data+length, memory + address);
 }
 
+void Memory::write_8(unsigned short address, unsigned char byte)
+{
+    memory[address] = byte;
+}
+
 // 16-bit values are stored in little-endian
 void Memory::write_16(unsigned short address, unsigned short data)
 {

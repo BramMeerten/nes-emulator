@@ -7,4 +7,7 @@ enum AddressingMode
     ABSOLUTE,
     ABSOLUTE_X,
     ABSOLUTE_Y,
+    INDIRECT,
+    INDEXED_INDIRECT,
+    INDIRECT_INDEXED
 };

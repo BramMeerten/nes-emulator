@@ -2,7 +2,6 @@
 
 #include "memory.h"
 
-// The fixture for testing class Foo.
 class MemoryTest : public ::testing::Test
 {
 protected:
