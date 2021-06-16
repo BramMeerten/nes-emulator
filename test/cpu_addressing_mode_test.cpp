@@ -8,8 +8,6 @@ protected:
   System system;
 };
 
-// TODO: Should also test PC counter after instruction with addressing mode is executed
-
 const unsigned char EXPECTED_RESULT = 0x40;
 
 TEST_F(CpuAddressingModeTest, Immediate)

@@ -29,9 +29,10 @@ void Cpu::resetState()
 
 void Cpu::run()
 {
-    for (int i = 0; i < 10; i++)
+    while(true)
     {
         unsigned char opCode = system->memory.read(pc);
+        if (opCode == 0x00) break;
         execOpCode(opCode);
         pc++;
     }
@@ -43,8 +44,6 @@ void Cpu::execOpCode(unsigned char opCode)
 {
     switch (opCode)
     {
-    case 0x00:
-        return; // BRK; TODO
     case 0xa0:
         return ldy(IMMEDIATE);
     case 0xa2:
@@ -73,6 +72,7 @@ void Cpu::execOpCode(unsigned char opCode)
         return inx();
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
+        exit(1);
     }
 }
 
@@ -129,7 +129,6 @@ void Cpu::updateZeroAndNegativeFlag(unsigned char result)
         status = status & 0b10111111;
 }
 
-// TODO update PC were needed
 unsigned short Cpu::getAddress(AddressingMode addressingMode)
 {
     switch (addressingMode)
@@ -142,8 +141,11 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         return (getAddress(ZERO_PAGE) + x) % 256;
     case ZERO_PAGE_Y:
         return (getAddress(ZERO_PAGE) + y) % 256;
-    case ABSOLUTE:
-        return system->memory.read_16(pc);
+    case ABSOLUTE: {
+        unsigned short value = system->memory.read_16(pc);
+        this->pc = this->pc + 1;
+        return value;
+    }
     case ABSOLUTE_X:
         return getAddress(ABSOLUTE) + x;
     case ABSOLUTE_Y:
@@ -151,6 +153,7 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
     // TODO
     // case INDIRECT: {
     //     unsigned short value = system->memory.read_16(pc);
+    //     this->pc = this->pc + 1;
     //     return system->memory.read_16(value);
     // }
     case INDEXED_INDIRECT: {
