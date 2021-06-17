@@ -23,6 +23,7 @@ private:
     void updateZeroAndNegativeFlag(unsigned char result);
     void print();
 
+    void andOp(AddressingMode addressingMode);
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);

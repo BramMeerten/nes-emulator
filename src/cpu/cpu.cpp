@@ -44,6 +44,22 @@ void Cpu::execOpCode(unsigned char opCode)
 {
     switch (opCode)
     {
+    case 0x21:
+        return andOp(INDEXED_INDIRECT);
+    case 0x25:
+        return andOp(ZERO_PAGE);
+    case 0x29:
+        return andOp(IMMEDIATE);
+    case 0x2d:
+        return andOp(ABSOLUTE);
+    case 0x31:
+        return andOp(INDIRECT_INDEXED);
+    case 0x35:
+        return andOp(ZERO_PAGE_X);
+    case 0x39:
+        return andOp(ABSOLUTE_Y);
+    case 0x3d:
+        return andOp(ABSOLUTE_X);
     case 0xa0:
         return ldy(IMMEDIATE);
     case 0xa2:
@@ -60,6 +76,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return ldy(ABSOLUTE);
     case 0xad:
         return lda(ABSOLUTE);
+    case 0xae:
+        return ldx(ABSOLUTE);
     case 0xb1:
         return lda(INDIRECT_INDEXED);
     case 0xb4:
@@ -70,10 +88,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return ldx(ZERO_PAGE_Y);
     case 0xb9:
         return lda(ABSOLUTE_Y);
-    case 0xac:
+    case 0xbc:
         return ldy(ABSOLUTE_X);
-    case 0xae:
-        return ldx(ABSOLUTE);
     case 0xbd:
         return lda(ABSOLUTE_X);
     case 0xbe:
@@ -88,6 +104,14 @@ void Cpu::execOpCode(unsigned char opCode)
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         exit(1);
     }
+}
+
+// A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
+void Cpu::andOp(AddressingMode addressingMode)
+{
+    pc++;
+    a = a & system->memory.read(getAddress(addressingMode));
+    updateZeroAndNegativeFlag(a);
 }
 
 // Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
