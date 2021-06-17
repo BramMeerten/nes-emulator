@@ -21,8 +21,11 @@ private:
     void resetState();
     void execOpCode(unsigned char opCode);
     void updateZeroAndNegativeFlag(unsigned char result);
+    void updateCarryFlag(unsigned short result);
     void print();
 
+    void adc(AddressingMode addressingMode);
+    void sec();
     void andOp(AddressingMode addressingMode);
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
@@ -40,13 +43,19 @@ private:
     unsigned char y;
 
     // NVss DIZC
+    // ----------
     // N: negative
-    // s
-    // s
     // V: Overflow
+    // s
+    // s
     // D: Decimal
     // I: Interrupt Disable
     // Z: Zero
     // C: Carry
     unsigned char status;
+
+    unsigned char getCarry()
+    {
+        return status & 0b0000'0001;
+    }
 };

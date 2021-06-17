@@ -9,3 +9,4 @@ Status: Implementing the 6502 instruction set
 * NES system documentation: http://nesdev.com/NESDoc.pdf
 * Test roms: https://github.com/christopherpow/nes-test-roms
 * Test roms: https://wiki.nesdev.com/w/index.php/Emulator_tests
+* Overflow flag: http://www.6502.org/tutorials/vflag.html#2.4

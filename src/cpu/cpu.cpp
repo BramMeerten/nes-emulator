@@ -29,10 +29,11 @@ void Cpu::resetState()
 
 void Cpu::run()
 {
-    while(true)
+    while (true)
     {
         unsigned char opCode = system->memory.read(pc);
-        if (opCode == 0x00) break;
+        if (opCode == 0x00)
+            break;
         execOpCode(opCode);
         pc++;
     }
@@ -56,10 +57,14 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(INDIRECT_INDEXED);
     case 0x35:
         return andOp(ZERO_PAGE_X);
+    case 0x38:
+        return sec();
     case 0x39:
         return andOp(ABSOLUTE_Y);
     case 0x3d:
         return andOp(ABSOLUTE_X);
+    case 0x69:
+        return adc(IMMEDIATE);
     case 0xa0:
         return ldy(IMMEDIATE);
     case 0xa2:
@@ -104,6 +109,35 @@ void Cpu::execOpCode(unsigned char opCode)
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         exit(1);
     }
+}
+
+// Adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
+void Cpu::adc(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned char value = system->memory.read(getAddress(addressingMode));
+    unsigned short result = a + value + getCarry();
+    updateZeroAndNegativeFlag(result);
+    updateCarryFlag(result);
+
+    // Overflow flag. Set if result if two's complement is outside -128, +127 range.
+    // This can only happen if:
+    // - Two positive numbers are added, and the result is a negative number.
+    // - Two negative numbers are added, and the result is a positive number.
+    // Simplification: Sign of both inputs is different from the sign of the result.
+    // Overflow occurs if (M^result) & (N^result) & 0b1000'0000 is nonzero.
+    if ((a ^ result) & (value ^ result) & 0b1000'0000)
+        status = status | 0b0100'0000;
+    else
+        status = status & 0b1011'1111;
+    
+    a = result;
+}
+
+// Set the carry flag to one.
+void Cpu::sec()
+{
+    status = status | 0b0000'0001;
 }
 
 // A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
@@ -162,9 +196,18 @@ void Cpu::updateZeroAndNegativeFlag(unsigned char result)
 
     // Set negative flag if bit 7 of result is set
     if (result & (1 << 7))
-        status = status | 0b01000000;
+        status = status | 0b1000'0000;
     else
-        status = status & 0b10111111;
+        status = status & 0b0111'1111;
+}
+
+void Cpu::updateCarryFlag(unsigned short result)
+{
+    // set carry flag if bit 7 overflow
+    if (result > 0xff)
+        status = status | 0b0000'0001;
+    else
+        status = status & 0b1111'1110;
 }
 
 unsigned short Cpu::getAddress(AddressingMode addressingMode)
@@ -179,7 +222,8 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         return (getAddress(ZERO_PAGE) + x) % 256;
     case ZERO_PAGE_Y:
         return (getAddress(ZERO_PAGE) + y) % 256;
-    case ABSOLUTE: {
+    case ABSOLUTE:
+    {
         unsigned short value = system->memory.read_16(pc);
         this->pc = this->pc + 1;
         return value;
@@ -194,11 +238,13 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
     //     this->pc = this->pc + 1;
     //     return system->memory.read_16(value);
     // }
-    case INDEXED_INDIRECT: {
+    case INDEXED_INDIRECT:
+    {
         unsigned char value = (system->memory.read(pc) + x) % 256;
         return system->memory.read_16(value);
     }
-    case INDIRECT_INDEXED: {
+    case INDIRECT_INDEXED:
+    {
         unsigned char value = system->memory.read(pc);
         return system->memory.read_16(value) + y;
     }
