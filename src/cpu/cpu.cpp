@@ -63,8 +63,22 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ABSOLUTE_Y);
     case 0x3d:
         return andOp(ABSOLUTE_X);
+    case 0x61:
+        return adc(INDEXED_INDIRECT);
+    case 0x65:
+        return adc(ZERO_PAGE);
     case 0x69:
         return adc(IMMEDIATE);
+    case 0x6d:
+        return adc(ABSOLUTE);
+    case 71:
+        return adc(INDIRECT_INDEXED);
+    case 0x75:
+        return adc(ZERO_PAGE_X);
+    case 0x79:
+        return adc(ABSOLUTE_Y);
+    case 0x7d:
+        return adc(ABSOLUTE_X);
     case 0xa0:
         return ldy(IMMEDIATE);
     case 0xa2:
@@ -130,7 +144,7 @@ void Cpu::adc(AddressingMode addressingMode)
         status = status | 0b0100'0000;
     else
         status = status & 0b1011'1111;
-    
+
     a = result;
 }
 
