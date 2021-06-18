@@ -9,5 +9,6 @@ enum AddressingMode
     ABSOLUTE_Y,
     // INDIRECT,
     INDEXED_INDIRECT,
-    INDIRECT_INDEXED
+    INDIRECT_INDEXED,
+    ACCUMULATOR
 };

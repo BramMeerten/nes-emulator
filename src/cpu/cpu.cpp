@@ -45,6 +45,16 @@ void Cpu::execOpCode(unsigned char opCode)
 {
     switch (opCode)
     {
+    case 0x06:
+        return asl(ZERO_PAGE);
+    case 0x0a:
+        return asl(ACCUMULATOR);
+    case 0x0e:
+        return asl(ABSOLUTE);
+    case 0x16:
+        return asl(ZERO_PAGE_X);
+    case 0x1e:
+        return asl(ABSOLUTE_X);
     case 0x21:
         return andOp(INDEXED_INDIRECT);
     case 0x25:
@@ -162,6 +172,24 @@ void Cpu::andOp(AddressingMode addressingMode)
     updateZeroAndNegativeFlag(a);
 }
 
+void Cpu::asl(AddressingMode addressingMode)
+{
+    unsigned char value;
+    if (addressingMode == ACCUMULATOR)
+    {
+        value = a;
+    }
+    else
+    {
+        pc++;
+        value = system->memory.read(getAddress(addressingMode));
+    }
+
+    status = status | value >> 7; // set carry flag
+    a = value << 1;
+    updateZeroAndNegativeFlag(a);
+}
+
 // Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
 void Cpu::lda(AddressingMode addressingMode)
 {
@@ -262,6 +290,9 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         unsigned char value = system->memory.read(pc);
         return system->memory.read_16(value) + y;
     }
+    default:
+        std::cout << "Unexpected addressing mode " << addressingMode << std::endl;
+        exit(1);
     }
 }
 

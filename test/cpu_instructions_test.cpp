@@ -159,3 +159,30 @@ TEST_F(CpuTest, Sec)
   // then
   EXPECT_EQ(system.cpu.getStatus(), 0b0000'0001); // carry = 1
 }
+
+TEST_F(CpuTest, ASL_accumulator)
+{
+  // given
+  unsigned char data[4] = {0xa9, 0b1011'0011, 0x0a, 0x00}; // LDA #b3; ASL A;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0b0110'0110);
+  EXPECT_EQ(system.cpu.getStatus() & 0x01, 0x01); // carry = 1
+}
+
+TEST_F(CpuTest, ASL_zero_page)
+{
+  // given
+  system.memory.write_8(0x0012, 0b0110'0110);
+  unsigned char data[4] = {0x06, 0x12, 0x00}; // ASL $12;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0b1100'1100);
+  EXPECT_EQ(system.cpu.getStatus() & 0x01, 0x00); // carry = 0
+}

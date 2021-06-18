@@ -27,6 +27,7 @@ private:
     void adc(AddressingMode addressingMode);
     void sec();
     void andOp(AddressingMode addressingMode);
+    void asl(AddressingMode AddressingMode);
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);
