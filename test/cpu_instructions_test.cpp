@@ -177,12 +177,69 @@ TEST_F(CpuTest, ASL_zero_page)
 {
   // given
   system.memory.write_8(0x0012, 0b0110'0110);
-  unsigned char data[4] = {0x06, 0x12, 0x00}; // ASL $12;
+  unsigned char data[3] = {0x06, 0x12, 0x00}; // ASL $12;
 
   // when
-  system.insertDisk(data, 4);
+  system.insertDisk(data, 3);
 
   // then
   EXPECT_EQ(system.cpu.getA(), 0b1100'1100);
   EXPECT_EQ(system.cpu.getStatus() & 0x01, 0x00); // carry = 0
+}
+
+TEST_F(CpuTest, CLC)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0xff, 0x0a, 0x18, 0x00}; // LDA #ff; CLC;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0x0000'0001, 0);
+}
+
+TEST_F(CpuTest, BCC_forward)
+{
+  // given
+  unsigned char data[10] = {0x18, 0x90, 0x04, 0x00, 0x00, 0x00, 0x00, 0xa9, 0x70, 0x00}; // CLC; BCC *+4; BRK; BRK; BRK; BRK; LDA #70;
+
+  // when
+  system.insertDisk(data, 10);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x70);
+}
+
+TEST_F(CpuTest, BCC_backward)
+{
+  // given
+  unsigned char data[12] = {
+    0x18,       // CLC;
+    0x90, 0x04, // BCC *+4;   (Jump to X)
+    0x00,       // BRK;
+    0xa9, 0xff, // LDA #ff;   (Y)
+    0x00,       // BRK;
+    0xa9, 0xee, // LDA #ee;   (X)
+    0x90, 0xf9, // BCC *-7;   (Jump to Y)
+    0x00        // BRK;
+    };
+
+  // when
+  system.insertDisk(data, 12);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0xff);
+}
+
+TEST_F(CpuTest, BCC_dont_jump)
+{
+  // given
+  unsigned char data[11] = {0xa9, 0xff, 0x0a, 0x90, 0x03, 0xa9, 0xee, 0x00, 0xa9, 0xdd, 0x00}; // LDA #ff; ASL A; BCC *+3; LDA #ee; BRK; LDA #dd; BRK;
+
+  // when
+  system.insertDisk(data, 11);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0xee);
 }

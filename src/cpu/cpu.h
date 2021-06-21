@@ -28,6 +28,8 @@ private:
     void sec();
     void andOp(AddressingMode addressingMode);
     void asl(AddressingMode AddressingMode);
+    void clc();
+    void bcc();
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);

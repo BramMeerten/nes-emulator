@@ -9,6 +9,7 @@ public:
     
     unsigned char read(unsigned short address);
     unsigned short read_16(unsigned short address);
+    signed int read_signed(unsigned short address);
 
 private:
     unsigned char memory[0xffff];

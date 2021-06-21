@@ -53,6 +53,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return asl(ABSOLUTE);
     case 0x16:
         return asl(ZERO_PAGE_X);
+    case 0x18:
+        return clc();
     case 0x1e:
         return asl(ABSOLUTE_X);
     case 0x21:
@@ -89,6 +91,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(ABSOLUTE_Y);
     case 0x7d:
         return adc(ABSOLUTE_X);
+    case 0x90:
+        return bcc();
     case 0xa0:
         return ldy(IMMEDIATE);
     case 0xa2:
@@ -172,6 +176,7 @@ void Cpu::andOp(AddressingMode addressingMode)
     updateZeroAndNegativeFlag(a);
 }
 
+// This operation shifts all the bits of the accumulator or memory contents one bit left. Bit 0 is set to 0 and bit 7 is placed in the carry flag.
 void Cpu::asl(AddressingMode addressingMode)
 {
     unsigned char value;
@@ -188,6 +193,20 @@ void Cpu::asl(AddressingMode addressingMode)
     status = status | value >> 7; // set carry flag
     a = value << 1;
     updateZeroAndNegativeFlag(a);
+}
+
+// Set the carry flag to zero.
+void Cpu::clc()
+{
+    status = status & 0x1111'1110;
+}
+
+// If the carry flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+void Cpu::bcc()
+{
+    pc++;
+    if (getCarry() == 0)
+        pc += system->memory.read_signed(pc);
 }
 
 // Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.

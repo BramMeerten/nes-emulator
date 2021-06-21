@@ -32,3 +32,10 @@ unsigned short Memory::read_16(unsigned short address)
     unsigned short p2 = memory[address+1];
     return (p2 << 8) | p1;
 }
+
+signed int Memory::read_signed(unsigned short address)
+{
+    unsigned char value = read(address);
+    bool negative = (value >> 7) == 1;
+    return negative ? -((unsigned char) (~value + 1)) : value;
+}
