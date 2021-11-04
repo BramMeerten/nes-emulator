@@ -31,6 +31,7 @@ private:
     void clc();
     void bcc();
     void bcs();
+    void beq();
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);
@@ -61,5 +62,10 @@ private:
     unsigned char getCarry()
     {
         return status & 0b0000'0001;
+    }
+
+    unsigned char getZero()
+    {
+        return (status & 0b0000'0010) >> 1;
     }
 };

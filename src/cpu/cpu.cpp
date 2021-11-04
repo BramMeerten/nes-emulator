@@ -135,6 +135,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return tax();
     case 0xe8:
         return inx();
+    case 0xf0:
+        return beq();
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         exit(1);
@@ -216,6 +218,14 @@ void Cpu::bcs()
 {
     pc++;
     if (getCarry() == 1)
+        pc += system->memory.read_signed(pc);
+}
+
+// If the zero flag is set then add the relative displacement to the program counter to cause a branch to a new location.
+void Cpu::beq()
+{
+    pc++;
+    if (getZero() == 1)
         pc += system->memory.read_signed(pc);
 }
 
