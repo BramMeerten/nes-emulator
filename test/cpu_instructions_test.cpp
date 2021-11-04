@@ -243,3 +243,36 @@ TEST_F(CpuTest, BCC_dont_jump)
   // then
   EXPECT_EQ(system.cpu.getA(), 0xee);
 }
+
+TEST_F(CpuTest, BCS_forward)
+{
+  // given
+  unsigned char data[10] = {0x38, 0xb0, 0x04, 0x00, 0x00, 0x00, 0x00, 0xa9, 0x70, 0x00}; // SEC; BCS *+4; BRK; BRK; BRK; BRK; LDA #70;
+
+  // when
+  system.insertDisk(data, 10);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x70);
+}
+
+TEST_F(CpuTest, BCS_backword)
+{
+  // given
+  unsigned char data[12] = {
+    0x38,        // SEC; 
+    0xb0, 0x04,  // BCS *+4;   (Jump to X)
+    0x00,        // BRK;
+    0xa9, 0x70,  // LDA #70;   (Y)
+    0x00,        // BRK;
+    0xa9, 0xff,  // LDA #FF;   (X)
+    0xb0, 0xf9,  // BCS *-7;   (Jump to Y)
+    0x00
+  }; 
+  
+  // when
+  system.insertDisk(data, 12);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x70);
+}

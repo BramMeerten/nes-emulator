@@ -30,6 +30,7 @@ private:
     void asl(AddressingMode AddressingMode);
     void clc();
     void bcc();
+    void bcs();
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);

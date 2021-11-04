@@ -111,6 +111,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(ABSOLUTE);
     case 0xae:
         return ldx(ABSOLUTE);
+    case 0xb0:
+        return bcs();
     case 0xb1:
         return lda(INDIRECT_INDEXED);
     case 0xb4:
@@ -206,6 +208,14 @@ void Cpu::bcc()
 {
     pc++;
     if (getCarry() == 0)
+        pc += system->memory.read_signed(pc);
+}
+
+// If the carry flag is set then add the relative displacement to the program counter to cause a branch to a new location.
+void Cpu::bcs()
+{
+    pc++;
+    if (getCarry() == 1)
         pc += system->memory.read_signed(pc);
 }
 
