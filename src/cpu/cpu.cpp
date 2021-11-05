@@ -69,6 +69,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return bit(ABSOLUTE);
     case 0x2d:
         return andOp(ABSOLUTE);
+    case 0x30:
+        return bmi();
     case 0x31:
         return andOp(INDIRECT_INDEXED);
     case 0x35:
@@ -242,6 +244,14 @@ void Cpu::beq()
 {
     pc++;
     if (getZero() == 1)
+        pc += system->memory.read_signed(pc);
+}
+
+// If the negative flag is set then add the relative displacement to the program counter to cause a branch to a new location.
+void Cpu::bmi()
+{
+    pc++;
+    if (getNegative() == 1)
         pc += system->memory.read_signed(pc);
 }
 

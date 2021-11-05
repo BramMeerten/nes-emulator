@@ -381,3 +381,28 @@ TEST_F(CpuTest, BIT_set_negative_flag)
   // then
   EXPECT_EQ(system.cpu.getStatus() & 0b1100'0000, 0b1000'0000);
 }
+
+TEST_F(CpuTest, BMI_jump)
+{
+  // given
+  unsigned char data[11] = {0xa9, 0x80, 0x30, 0x04, 0x00, 0x00, 0x00, 0x00, 0xa9, 0x70, 0x00}; // LDA #80; BEQ *+4; BRK; BRK; BRK; BRK; LDA #70;
+
+  // when
+  system.insertDisk(data, 11);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x70);
+}
+
+
+TEST_F(CpuTest, BMI_dont_jump)
+{
+  // given
+  unsigned char data[11] = {0xa9, 0x7f, 0x30, 0x04, 0x00, 0x00, 0x00, 0x00, 0xa9, 0x70, 0x00}; // LDA #fe; BEQ *+4; BRK; BRK; BRK; BRK; LDA #70;
+
+  // when
+  system.insertDisk(data, 11);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x7f);
+}
