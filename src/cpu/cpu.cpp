@@ -59,10 +59,14 @@ void Cpu::execOpCode(unsigned char opCode)
         return asl(ABSOLUTE_X);
     case 0x21:
         return andOp(INDEXED_INDIRECT);
+    case 0x24:
+        return bit(ZERO_PAGE);
     case 0x25:
         return andOp(ZERO_PAGE);
     case 0x29:
         return andOp(IMMEDIATE);
+    case 0x2c:
+        return bit(ABSOLUTE);
     case 0x2d:
         return andOp(ABSOLUTE);
     case 0x31:
@@ -180,6 +184,18 @@ void Cpu::andOp(AddressingMode addressingMode)
     updateZeroAndNegativeFlag(a);
 }
 
+// Test if one or more bits are set in a target memory location. The mask pattern in A is ANDed with the value in memory to set or clear the zero flag, but the result is not kept. 
+// Bits 7 and 6 of the value from memory are copied into the N and V flags.
+void Cpu::bit(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned char mem = system->memory.read(getAddress(addressingMode));
+    unsigned char result = a & mem;
+    updateZeroFlag(result);
+    updateNegativeFlag(mem);
+    updateOverflowFlag(mem);
+}
+
 // This operation shifts all the bits of the accumulator or memory contents one bit left. Bit 0 is set to 0 and bit 7 is placed in the carry flag.
 void Cpu::asl(AddressingMode addressingMode)
 {
@@ -269,17 +285,36 @@ void Cpu::inx()
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
 {
-    // Set zero flag if result = 0
+    updateZeroFlag(result);
+    updateNegativeFlag(result);
+}
+
+// Set zero flag if result = 0
+void Cpu::updateZeroFlag(unsigned char result)
+{
     if (result == 0)
         status = status | 0b00000010;
     else
         status = status & 0b11111101;
+}
 
-    // Set negative flag if bit 7 of result is set
+// Set negative flag if bit 7 of result is set
+void Cpu::updateNegativeFlag(unsigned char result)
+{
     if (result & (1 << 7))
         status = status | 0b1000'0000;
     else
         status = status & 0b0111'1111;
+}
+
+// TODO for now sets flag if bit 6 of result is set (used in BIT operator)
+// But is this always the expected behaviour?
+void Cpu::updateOverflowFlag(unsigned char result)
+{
+    if (result & (1 << 6))
+        status = status | 0b0100'0000;
+    else
+        status = status & 0b1011'1111;
 }
 
 void Cpu::updateCarryFlag(unsigned short result)

@@ -313,3 +313,71 @@ TEST_F(CpuTest, BEQ_dont_jump)
   // then
   EXPECT_EQ(system.cpu.getA(), 0x01);
 }
+
+TEST_F(CpuTest, BIT_is_not_zero)
+{
+  // given
+  system.memory.write_8(0x0012, 0b0011'0110);
+  unsigned char data[5] = {
+    0xa9, 0x18,     // LDA #0b0001'1000; 
+    0x24, 0x12,     // BIT $12
+    0x00
+  }; 
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getZero(), 0x0);
+  EXPECT_EQ(system.cpu.getStatus() & 0b1100'0000, 0x0);
+}
+
+TEST_F(CpuTest, BIT_is_zero)
+{
+  // given
+  system.memory.write_8(0x0012, 0b0010'0110);
+  unsigned char data[5] = {
+    0xa9, 0x18,     // LDA #0b0001'1000; 
+    0x24, 0x12,     // BIT $12
+    0x00
+  }; 
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getZero(), 0x01);
+  EXPECT_EQ(system.cpu.getStatus() & 0b1100'0000, 0x0);
+}
+
+TEST_F(CpuTest, BIT_set_overflow_flag)
+{
+  // given
+  system.memory.write_8(0x0012, 0b0100'1111);
+  unsigned char data[3] = {
+    0x24, 0x12,     // BIT $12
+    0x00
+  }; 
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1100'0000, 0b0100'0000);
+}
+
+TEST_F(CpuTest, BIT_set_negative_flag)
+{
+  // given
+  system.memory.write_8(0x0012, 0b1000'1111);
+  unsigned char data[3] = {
+    0x24, 0x12,     // BIT $12
+    0x00
+  }; 
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1100'0000, 0b1000'0000);
+}

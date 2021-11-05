@@ -16,16 +16,21 @@ public:
     unsigned char getX() { return x; };
     unsigned char getY() { return y; };
     unsigned char getStatus() { return status; };
+    unsigned char getZero() { return (status & 0b0000'0010) >> 1; }
 
 private:
     void resetState();
     void execOpCode(unsigned char opCode);
     void updateZeroAndNegativeFlag(unsigned char result);
+    void updateZeroFlag(unsigned char result);
+    void updateNegativeFlag(unsigned char result);
+    void updateOverflowFlag(unsigned char result);
     void updateCarryFlag(unsigned short result);
     void print();
 
     void adc(AddressingMode addressingMode);
     void sec();
+    void bit(AddressingMode addressingMode);
     void andOp(AddressingMode addressingMode);
     void asl(AddressingMode AddressingMode);
     void clc();
@@ -62,10 +67,5 @@ private:
     unsigned char getCarry()
     {
         return status & 0b0000'0001;
-    }
-
-    unsigned char getZero()
-    {
-        return (status & 0b0000'0010) >> 1;
     }
 };
