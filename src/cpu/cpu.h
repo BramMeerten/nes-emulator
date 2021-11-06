@@ -37,12 +37,13 @@ private:
     void bcc();
     void bcs();
     void beq();
+    void bne();
     void bmi();
+    void bpl();
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);
     void tax();
-    void bne();
     void inx();
 
     unsigned short getAddress(AddressingMode addressingMode);

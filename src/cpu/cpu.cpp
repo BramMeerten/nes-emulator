@@ -51,6 +51,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return asl(ACCUMULATOR);
     case 0x0e:
         return asl(ABSOLUTE);
+    case 0x10:
+        return bpl();
     case 0x16:
         return asl(ZERO_PAGE_X);
     case 0x18:
@@ -262,6 +264,14 @@ void Cpu::bmi()
 {
     pc++;
     if (getNegative() == 1)
+        pc += system->memory.read_signed(pc);
+}
+
+// If the negative flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+void Cpu::bpl()
+{
+    pc++;
+    if (getNegative() == 0)
         pc += system->memory.read_signed(pc);
 }
 
