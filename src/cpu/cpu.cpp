@@ -139,6 +139,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(INDEXED_INDIRECT);
     case 0xaa:
         return tax();
+    case 0xd0:
+        return bne();
     case 0xe8:
         return inx();
     case 0xf0:
@@ -244,6 +246,14 @@ void Cpu::beq()
 {
     pc++;
     if (getZero() == 1)
+        pc += system->memory.read_signed(pc);
+}
+
+// If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+void Cpu::bne()
+{
+    pc++;
+    if (getZero() == 0)
         pc += system->memory.read_signed(pc);
 }
 

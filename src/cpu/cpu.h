@@ -42,6 +42,7 @@ private:
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);
     void tax();
+    void bne();
     void inx();
 
     unsigned short getAddress(AddressingMode addressingMode);

@@ -406,3 +406,28 @@ TEST_F(CpuTest, BMI_dont_jump)
   // then
   EXPECT_EQ(system.cpu.getA(), 0x7f);
 }
+
+TEST_F(CpuTest, BNE_dont_jump)
+{
+  // given
+  unsigned char data[11] = {0xa9, 0x00, 0xd0, 0x04, 0x00, 0x00, 0x00, 0x00, 0xa9, 0x70, 0x00}; // LDA #00; BNE *+4; BRK; BRK; BRK; BRK; LDA #70;
+
+  // when
+  system.insertDisk(data, 11);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x00);
+}
+
+
+TEST_F(CpuTest, BNE_jump)
+{
+  // given
+  unsigned char data[11] = {0xa9, 0x01, 0xd0, 0x04, 0x00, 0x00, 0x00, 0x00, 0xa9, 0x70, 0x00}; // LDA #01; BNE *+4; BRK; BRK; BRK; BRK; LDA #70;
+
+  // when
+  system.insertDisk(data, 11);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x70);
+}
