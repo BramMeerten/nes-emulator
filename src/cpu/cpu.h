@@ -38,6 +38,7 @@ private:
     void clc();
     void cld();
     void cli();
+    void clv();
     void bcc();
     void bcs();
     void beq();

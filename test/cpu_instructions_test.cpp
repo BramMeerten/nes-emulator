@@ -196,6 +196,19 @@ TEST_F(CpuTest, Cli)
   EXPECT_EQ(system.cpu.getStatus(), 0b0000'0000);
 }
 
+TEST_F(CpuTest, Clv)
+{
+  // given
+  system.memory.write_8(0x0012, 0b0100'1111);
+  unsigned char data[4] = {0x24, 0x12, 0xb8, 0x00}; // BIT $12; CLV;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'0000);
+}
+
 TEST_F(CpuTest, ASL_accumulator)
 {
   // given

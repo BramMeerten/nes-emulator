@@ -138,6 +138,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(ZERO_PAGE_X);
     case 0xb6:
         return ldx(ZERO_PAGE_Y);
+    case 0xb8:
+        return clv();
     case 0xb9:
         return lda(ABSOLUTE_Y);
     case 0xbc:
@@ -262,6 +264,12 @@ void Cpu::clc()
 void Cpu::cld()
 {
     status = status & 0x1111'0111;
+}
+
+// Clears the overflow flag.
+void Cpu::clv()
+{
+    status = status & 0x1011'1111;
 }
 
 // If the carry flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
