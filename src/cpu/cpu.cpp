@@ -84,10 +84,20 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ABSOLUTE_Y);
     case 0x3d:
         return andOp(ABSOLUTE_X);
+    case 0x46:
+        return lsr(ZERO_PAGE);
+    case 0x4a:
+        return lsr(ACCUMULATOR);
+    case 0x4e:
+        return lsr(ABSOLUTE);
     case 0x50:
         return bvc();
+    case 0x56:
+        return lsr(ZERO_PAGE_X);
     case 0x58:
         return cli();
+    case 0x5e:
+        return lsr(ABSOLUTE_X);
     case 0x61:
         return adc(INDEXED_INDIRECT);
     case 0x65:
@@ -266,20 +276,37 @@ void Cpu::bit(AddressingMode addressingMode)
 // This operation shifts all the bits of the accumulator or memory contents one bit left. Bit 0 is set to 0 and bit 7 is placed in the carry flag.
 void Cpu::asl(AddressingMode addressingMode)
 {
-    unsigned char value;
-    if (addressingMode == ACCUMULATOR)
-    {
-        value = a;
-    }
-    else
-    {
+    unsigned char originalValue;
+    if (addressingMode == ACCUMULATOR) {
+        originalValue = a;
+        a = a << 1;
+        updateZeroAndNegativeFlag(a);
+    } else {
         pc++;
-        value = system->memory.read(getAddress(addressingMode));
+        originalValue = system->memory.read(getAddress(addressingMode));
+        system->memory.write_8(getAddress(addressingMode), originalValue << 1);
+        updateZeroAndNegativeFlag(originalValue << 1);
     }
 
-    status = status | value >> 7; // set carry flag
-    a = value << 1;
-    updateZeroAndNegativeFlag(a);
+    status = (status & ~0x01) | (originalValue >> 7); // set carry flag
+}
+
+// Each of the bits in A or M is shift one place to the right. The bit that was in bit 0 is shifted into the carry flag. Bit 7 is set to zero.
+void Cpu::lsr(AddressingMode addressingMode)
+{
+    unsigned char originalValue;
+    if (addressingMode == ACCUMULATOR) {
+        originalValue = a;
+        a = a >> 1;
+        updateZeroAndNegativeFlag(a);
+    } else {
+        pc++;
+        originalValue = system->memory.read(getAddress(addressingMode));
+        system->memory.write_8(getAddress(addressingMode), originalValue >> 1);
+        updateZeroAndNegativeFlag(originalValue >> 1);
+    }
+
+    status = (status & ~0x01) | (originalValue & 0x01); // set carry flag
 }
 
 // Set the carry flag to zero.

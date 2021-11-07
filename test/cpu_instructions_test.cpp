@@ -225,14 +225,54 @@ TEST_F(CpuTest, ASL_accumulator)
 TEST_F(CpuTest, ASL_zero_page)
 {
   // given
-  system.memory.write_8(0x0012, 0b0110'0110);
+  system.memory.write_8(0x12, 0b0110'0110);
   unsigned char data[3] = {0x06, 0x12, 0x00}; // ASL $12;
 
   // when
   system.insertDisk(data, 3);
 
   // then
-  EXPECT_EQ(system.cpu.getA(), 0b1100'1100);
+  EXPECT_EQ(system.memory.read(0x12), 0b1100'1100);
+  EXPECT_EQ(system.cpu.getStatus() & 0x01, 0x00); // carry = 0
+}
+
+TEST_F(CpuTest, ASL_set_carry_zero)
+{
+  // given
+  unsigned char data[5] = {0x38, 0xa9, 0b0011'0011, 0x0a, 0x00}; // SEC; LDA #b3; ASL A;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0b0110'0110);
+  EXPECT_EQ(system.cpu.getStatus() & 0x01, 0x00); // carry = 0
+}
+
+TEST_F(CpuTest, LSR_accumulator)
+{
+  // given
+  unsigned char data[4] = {0xa9, 0b0011'0011, 0x4a, 0x00}; // LDA #0011'0011; LSR A;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0b0001'1001);
+  EXPECT_EQ(system.cpu.getStatus() & 0x01, 0x01); // carry = 1
+}
+
+TEST_F(CpuTest, LSR_zero_page)
+{
+  // given
+  system.memory.write_8(0x12, 0b0110'0110);
+  unsigned char data[4] = {0x38, 0x46, 0x12, 0x00}; // SEC; ASL $12;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x12), 0b0011'0011);
   EXPECT_EQ(system.cpu.getStatus() & 0x01, 0x00); // carry = 0
 }
 

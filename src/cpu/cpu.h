@@ -55,6 +55,7 @@ private:
     void cmp(AddressingMode addressingMode);
     void cpx(AddressingMode addressingMode);
     void cpy(AddressingMode addressingMode);
+    void lsr(AddressingMode addressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 
