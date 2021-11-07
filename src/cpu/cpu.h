@@ -53,6 +53,8 @@ private:
     void tax();
     void inx();
     void cmp(AddressingMode addressingMode);
+    void cpx(AddressingMode addressingMode);
+    void cpy(AddressingMode addressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

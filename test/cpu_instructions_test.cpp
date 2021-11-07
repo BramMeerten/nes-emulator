@@ -605,3 +605,75 @@ TEST_F(CpuTest, CMP_greater)
   // then
   EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b0000'0001);
 }
+
+TEST_F(CpuTest, CPX_equals)
+{
+  // given
+  unsigned char data[5] = {0xa2, 0x12, 0xe0, 0x12, 0x00}; // LDX #12; CPX #12; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b0000'0011);
+}
+
+TEST_F(CpuTest, CPX_less_then)
+{
+  // given
+  unsigned char data[5] = {0xa2, 0x12, 0xe0, 0x14, 0x00}; // LDX #12; CPX #14; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b1000'0000);
+}
+
+TEST_F(CpuTest, CPX_greater)
+{
+    // given
+  unsigned char data[5] = {0xa2, 0x12, 0xe0, 0x09, 0x00}; // LDX #12; CPX #09; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b0000'0001);
+}
+
+TEST_F(CpuTest, CPY_equals)
+{
+  // given
+  unsigned char data[5] = {0xa0, 0x12, 0xc0, 0x12, 0x00}; // LDY #12; CPY #12; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b0000'0011);
+}
+
+TEST_F(CpuTest, CPY_less_then)
+{
+  // given
+  unsigned char data[5] = {0xa0, 0x12, 0xc0, 0x14, 0x00}; // LDY #12; CPY #14; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b1000'0000);
+}
+
+TEST_F(CpuTest, CPY_greater)
+{
+    // given
+  unsigned char data[5] = {0xa0, 0x12, 0xc0, 0x09, 0x00}; // LDY #12; CPY #09; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b0000'0001);
+}

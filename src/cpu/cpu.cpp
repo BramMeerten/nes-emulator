@@ -152,12 +152,18 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(ABSOLUTE_X);
     case 0xbe:
         return ldx(ABSOLUTE_Y);
+    case 0xc0:
+        return cpy(IMMEDIATE);
     case 0xc1:
         return cmp(INDEXED_INDIRECT);
+    case 0xc4:
+        return cpy(ZERO_PAGE);
     case 0xc5:
         return cmp(ZERO_PAGE);
     case 0xc9:
         return cmp(IMMEDIATE);
+    case 0xcc:
+        return cpy(ABSOLUTE);
     case 0xcd:
         return cmp(ABSOLUTE);
     case 0xd0:
@@ -172,8 +178,14 @@ void Cpu::execOpCode(unsigned char opCode)
         return cmp(ABSOLUTE_Y);
     case 0xdd:
         return cmp(ABSOLUTE_X);
+    case 0xe0:
+        return cpx(IMMEDIATE);
+    case 0xe4:
+        return cpx(ZERO_PAGE);
     case 0xe8:
         return inx();
+    case 0xec:
+        return cpx(ABSOLUTE);
     case 0xf0:
         return beq();
     case 0xf8:
@@ -399,6 +411,42 @@ void Cpu::cmp(AddressingMode addressingMode)
 
     // Set carry flag if A >= M
     if (a >= mem) {
+        status = status | 0b0000'0001;
+    } else {
+        status = status & 0b1111'1110;
+    }
+
+    updateZeroFlag(result);
+    updateNegativeFlag(result);
+}
+
+// This instruction compares the contents of the X register with another memory held value and sets the zero and carry flags as appropriate.
+void Cpu::cpx(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned char mem = system->memory.read(getAddress(addressingMode));
+    unsigned char result = x - mem;
+
+    // Set carry flag if X >= M
+    if (x >= mem) {
+        status = status | 0b0000'0001;
+    } else {
+        status = status & 0b1111'1110;
+    }
+
+    updateZeroFlag(result);
+    updateNegativeFlag(result);
+}
+
+// This instruction compares the contents of the Y register with another memory held value and sets the zero and carry flags as appropriate.
+void Cpu::cpy(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned char mem = system->memory.read(getAddress(addressingMode));
+    unsigned char result = y - mem;
+
+    // Set carry flag if Y >= M
+    if (y >= mem) {
         status = status | 0b0000'0001;
     } else {
         status = status & 0b1111'1110;
