@@ -96,7 +96,7 @@ void Cpu::execOpCode(unsigned char opCode)
         return bvs();
     case 0x6d:
         return adc(ABSOLUTE);
-    case 71:
+    case 0x71:
         return adc(INDIRECT_INDEXED);
     case 0x75:
         return adc(ZERO_PAGE_X);
@@ -148,10 +148,14 @@ void Cpu::execOpCode(unsigned char opCode)
         return tax();
     case 0xd0:
         return bne();
+    case 0xd8:
+        return cld();
     case 0xe8:
         return inx();
     case 0xf0:
         return beq();
+    case 0xf8:
+        return sed();
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         exit(1);
@@ -185,6 +189,12 @@ void Cpu::adc(AddressingMode addressingMode)
 void Cpu::sec()
 {
     status = status | 0b0000'0001;
+}
+
+// Set the decimal flag to one.
+void Cpu::sed()
+{
+    status = status | 0b0000'1000;
 }
 
 // A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
@@ -230,6 +240,12 @@ void Cpu::asl(AddressingMode addressingMode)
 void Cpu::clc()
 {
     status = status & 0x1111'1110;
+}
+
+// Set the decimal flag to zero.
+void Cpu::cld()
+{
+    status = status & 0x1111'0111;
 }
 
 // If the carry flag is clear then add the relative displacement to the program counter to cause a branch to a new location.

@@ -30,10 +30,12 @@ private:
 
     void adc(AddressingMode addressingMode);
     void sec();
+    void sed();
     void bit(AddressingMode addressingMode);
     void andOp(AddressingMode addressingMode);
     void asl(AddressingMode AddressingMode);
     void clc();
+    void cld();
     void bcc();
     void bcs();
     void beq();

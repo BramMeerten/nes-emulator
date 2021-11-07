@@ -160,6 +160,18 @@ TEST_F(CpuTest, Sec)
   EXPECT_EQ(system.cpu.getStatus(), 0b0000'0001); // carry = 1
 }
 
+TEST_F(CpuTest, Sed)
+{
+  // given
+  unsigned char data[2] = {0xf8, 0x00}; // SED;
+
+  // when
+  system.insertDisk(data, 2);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'1000); // decimal = 1
+}
+
 TEST_F(CpuTest, ASL_accumulator)
 {
   // given
@@ -197,6 +209,18 @@ TEST_F(CpuTest, CLC)
 
   // then
   EXPECT_EQ(system.cpu.getStatus() & 0x0000'0001, 0);
+}
+
+TEST_F(CpuTest, CLD)
+{
+  // given
+  unsigned char data[3] = {0xf8, 0xd8, 0x00}; // SED; CLD;
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0x0000'0000, 0);
 }
 
 TEST_F(CpuTest, BCC_forward)
