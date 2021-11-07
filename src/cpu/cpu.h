@@ -52,6 +52,7 @@ private:
     void ldy(AddressingMode addressingMode);
     void tax();
     void inx();
+    void cmp(AddressingMode addressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

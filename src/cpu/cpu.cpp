@@ -94,16 +94,16 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(ZERO_PAGE);
     case 0x69:
         return adc(IMMEDIATE);
-    case 0x70:
-        return bvs();
-    case 0x78:
-        return sei();
     case 0x6d:
         return adc(ABSOLUTE);
+    case 0x70:
+        return bvs();
     case 0x71:
         return adc(INDIRECT_INDEXED);
     case 0x75:
         return adc(ZERO_PAGE_X);
+    case 0x78:
+        return sei();
     case 0x79:
         return adc(ABSOLUTE_Y);
     case 0x7d:
@@ -112,6 +112,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return bcc();
     case 0xa0:
         return ldy(IMMEDIATE);
+    case 0xa1:
+        return lda(INDEXED_INDIRECT);
     case 0xa2:
         return ldx(IMMEDIATE);
     case 0xa4:
@@ -122,6 +124,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return ldx(ZERO_PAGE);
     case 0xa9:
         return lda(IMMEDIATE);
+    case 0xaa:
+        return tax();
     case 0xac:
         return ldy(ABSOLUTE);
     case 0xad:
@@ -148,14 +152,26 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(ABSOLUTE_X);
     case 0xbe:
         return ldx(ABSOLUTE_Y);
-    case 0xa1:
-        return lda(INDEXED_INDIRECT);
-    case 0xaa:
-        return tax();
+    case 0xc1:
+        return cmp(INDEXED_INDIRECT);
+    case 0xc5:
+        return cmp(ZERO_PAGE);
+    case 0xc9:
+        return cmp(IMMEDIATE);
+    case 0xcd:
+        return cmp(ABSOLUTE);
     case 0xd0:
         return bne();
+    case 0xd1:
+        return cmp(INDIRECT_INDEXED);
+    case 0xd5:
+        return cmp(ZERO_PAGE_X);
     case 0xd8:
         return cld();
+    case 0xd9:
+        return cmp(ABSOLUTE_Y);
+    case 0xdd:
+        return cmp(ABSOLUTE_X);
     case 0xe8:
         return inx();
     case 0xf0:
@@ -372,6 +388,24 @@ void Cpu::inx()
 {
     x += 1;
     updateZeroAndNegativeFlag(x);
+}
+
+// This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
+void Cpu::cmp(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned char mem = system->memory.read(getAddress(addressingMode));
+    unsigned char result = a - mem;
+
+    // Set carry flag if A >= M
+    if (a >= mem) {
+        status = status | 0b0000'0001;
+    } else {
+        status = status & 0b1111'1110;
+    }
+
+    updateZeroFlag(result);
+    updateNegativeFlag(result);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

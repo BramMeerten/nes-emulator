@@ -569,3 +569,39 @@ TEST_F(CpuTest, BVS_dont_jump)
   // then
   EXPECT_EQ(system.cpu.getA(), 0x00);
 }
+
+TEST_F(CpuTest, CMP_equals)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0x12, 0xc9, 0x12, 0x00}; // LDA #12; CMP #12; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b0000'0011);
+}
+
+TEST_F(CpuTest, CMP_less_then)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0x12, 0xc9, 0x14, 0x00}; // LDA #12; CMP #14; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b1000'0000);
+}
+
+TEST_F(CpuTest, CMP_greater)
+{
+    // given
+  unsigned char data[5] = {0xa9, 0x12, 0xc9, 0x09, 0x00}; // LDA #12; CMP #09; BRK;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b0000'0001);
+}
