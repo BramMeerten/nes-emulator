@@ -482,3 +482,29 @@ TEST_F(CpuTest, BVC_jump)
   // then
   EXPECT_EQ(system.cpu.getA(), 0x70);
 }
+
+TEST_F(CpuTest, BVS_jump)
+{
+  // given
+  system.memory.write_8(0x0012, 0b0100'1111);
+  unsigned char data[11] = {0x24, 0x12, 0x70, 0x04, 0x00, 0x00, 0x00, 0x00, 0xa9, 0x70, 0x00}; // BIT $12; BVS *+4; BRK; BRK; BRK; BRK; LDA #70;
+
+  // when
+  system.insertDisk(data, 11);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x70);
+}
+
+
+TEST_F(CpuTest, BVS_dont_jump)
+{
+  // given
+  unsigned char data[9] = {0x70, 0x04, 0x00, 0x00, 0x00, 0x00, 0xa9, 0x70, 0x00}; // BVS *+4; BRK; BRK; BRK; BRK; LDA #70;
+
+  // when
+  system.insertDisk(data, 9);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x00);
+}

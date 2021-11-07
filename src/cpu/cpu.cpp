@@ -92,6 +92,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(ZERO_PAGE);
     case 0x69:
         return adc(IMMEDIATE);
+    case 0x70:
+        return bvs();
     case 0x6d:
         return adc(ABSOLUTE);
     case 71:
@@ -283,6 +285,14 @@ void Cpu::bvc()
 {
     pc++;
     if (getOverflow() == 0)
+        pc += system->memory.read_signed(pc);
+}
+
+// If the overflow flag is set then add the relative displacement to the program counter to cause a branch to a new location.
+void Cpu::bvs()
+{
+    pc++;
+    if (getOverflow() == 1)
         pc += system->memory.read_signed(pc);
 }
 

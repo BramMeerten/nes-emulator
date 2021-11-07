@@ -41,6 +41,7 @@ private:
     void bmi();
     void bpl();
     void bvc();
+    void bvs();
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);
