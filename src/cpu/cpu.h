@@ -35,6 +35,7 @@ private:
     void sei();
     void bit(AddressingMode addressingMode);
     void andOp(AddressingMode addressingMode);
+    void ora(AddressingMode addressingMode);
     void asl(AddressingMode AddressingMode);
     void clc();
     void cld();

@@ -46,18 +46,34 @@ void Cpu::execOpCode(unsigned char opCode)
     // TODO BRK not implemented
     switch (opCode)
     {
+    case 0x01:
+        return ora(INDEXED_INDIRECT);
+    case 0x05:
+        return ora(ZERO_PAGE);
     case 0x06:
         return asl(ZERO_PAGE);
+    case 0x09:
+        return ora(IMMEDIATE);
     case 0x0a:
         return asl(ACCUMULATOR);
+    case 0x0d:
+        return ora(ABSOLUTE);
     case 0x0e:
         return asl(ABSOLUTE);
     case 0x10:
         return bpl();
+    case 0x11:
+        return ora(INDIRECT_INDEXED);
+    case 0x15:
+        return ora(ZERO_PAGE_X);
     case 0x16:
         return asl(ZERO_PAGE_X);
     case 0x18:
         return clc();
+    case 0x19:
+        return ora(ABSOLUTE_Y);
+    case 0x1d:
+        return ora(ABSOLUTE_X);
     case 0x1e:
         return asl(ABSOLUTE_X);
     case 0x21:
@@ -265,6 +281,14 @@ void Cpu::andOp(AddressingMode addressingMode)
 {
     pc++;
     a = a & system->memory.read(getAddress(addressingMode));
+    updateZeroAndNegativeFlag(a);
+}
+
+// An inclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
+void Cpu::ora(AddressingMode addressingMode)
+{
+    pc++;
+    a = a | system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(a);
 }
 

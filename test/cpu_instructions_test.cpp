@@ -109,6 +109,18 @@ TEST_F(CpuTest, And)
   EXPECT_EQ(system.cpu.getA(), 0b0010'0001);
 }
 
+TEST_F(CpuTest, ORA)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0b0011'0011, 0x09, 0b1010'0001, 0x00}; // LDA #33; ORA #a1;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0b1011'0011);
+}
+
 TEST_F(CpuTest, Adc)
 {
   // given
