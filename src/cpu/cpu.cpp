@@ -25,6 +25,7 @@ void Cpu::resetState()
     a = 0;
     x = 0;
     y = 0;
+    sp = 0xff; // Not necessary, software should set SP at startup
 }
 
 void Cpu::run()
@@ -102,6 +103,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ABSOLUTE_X);
     case 0x46:
         return lsr(ZERO_PAGE);
+    case 0x48:
+        return pha();
     case 0x4a:
         return lsr(ACCUMULATOR);
     case 0x4e:
@@ -514,6 +517,12 @@ void Cpu::cpy(AddressingMode addressingMode)
     updateNegativeFlag(result);
 }
 
+// Pushes a copy of the accumulator on to the stack.
+void Cpu::pha()
+{
+    pushStack(a);
+}
+
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
 {
     updateZeroFlag(result);
@@ -555,6 +564,12 @@ void Cpu::updateCarryFlag(unsigned short result)
         status = status | 0b0000'0001;
     else
         status = status & 0b1111'1110;
+}
+
+void Cpu::pushStack(unsigned char value)
+{
+    system->memory.write_8(getSP_16(), value);
+    sp--;
 }
 
 unsigned short Cpu::getAddress(AddressingMode addressingMode)

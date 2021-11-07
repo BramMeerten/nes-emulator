@@ -26,6 +26,7 @@ private:
     void updateNegativeFlag(unsigned char result);
     void updateOverflowFlag(unsigned char result);
     void updateCarryFlag(unsigned short result);
+    void pushStack(unsigned char value);
     void print();
 
     void nop();
@@ -58,12 +59,14 @@ private:
     void cpx(AddressingMode addressingMode);
     void cpy(AddressingMode addressingMode);
     void lsr(AddressingMode addressingMode);
+    void pha();
 
     unsigned short getAddress(AddressingMode addressingMode);
 
     System *system;
 
     unsigned short pc;
+    unsigned char sp;
     unsigned char a;
     unsigned char x;
     unsigned char y;
@@ -79,6 +82,11 @@ private:
     // Z: Zero
     // C: Carry
     unsigned char status;
+
+    unsigned short getSP_16()
+    {
+        return 0x0100 | (0x0100 | sp);
+    }
 
     unsigned char getCarry()
     {

@@ -741,3 +741,16 @@ TEST_F(CpuTest, NOP)
   // then
   EXPECT_EQ(system.cpu.getA(), 0x03);
 }
+
+TEST_F(CpuTest, PHA)
+{
+  // given
+  unsigned char data[7] = {0xa9, 0x15, 0x48, 0xa9, 0xa1, 0x48, 0x00}; // LDA #15; PHA; LDA #a1; PHA
+
+  // when
+  system.insertDisk(data, 7);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x01ff), 0x15);
+  EXPECT_EQ(system.memory.read(0x01fe), 0xa1);
+}
