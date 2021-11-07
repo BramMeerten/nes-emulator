@@ -43,6 +43,7 @@ void Cpu::run()
 
 void Cpu::execOpCode(unsigned char opCode)
 {
+    // TODO BRK not implemented
     switch (opCode)
     {
     case 0x06:
@@ -83,6 +84,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ABSOLUTE_Y);
     case 0x3d:
         return andOp(ABSOLUTE_X);
+    case 0x50:
+        return bvc();
     case 0x61:
         return adc(INDEXED_INDIRECT);
     case 0x65:
@@ -272,6 +275,14 @@ void Cpu::bpl()
 {
     pc++;
     if (getNegative() == 0)
+        pc += system->memory.read_signed(pc);
+}
+
+// If the overflow flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+void Cpu::bvc()
+{
+    pc++;
+    if (getOverflow() == 0)
         pc += system->memory.read_signed(pc);
 }
 

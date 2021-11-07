@@ -40,6 +40,7 @@ private:
     void bne();
     void bmi();
     void bpl();
+    void bvc();
     void lda(AddressingMode addressingMode);
     void ldx(AddressingMode addressingMode);
     void ldy(AddressingMode addressingMode);
@@ -75,5 +76,10 @@ private:
     unsigned char getNegative()
     {
         return (status & 0b1000'0000) ? 1 : 0;
+    }
+
+    unsigned char getOverflow()
+    {
+        return (status & 0b0100'0000) ? 1 : 0;
     }
 };
