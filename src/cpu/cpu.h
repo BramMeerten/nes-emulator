@@ -31,11 +31,13 @@ private:
     void adc(AddressingMode addressingMode);
     void sec();
     void sed();
+    void sei();
     void bit(AddressingMode addressingMode);
     void andOp(AddressingMode addressingMode);
     void asl(AddressingMode AddressingMode);
     void clc();
     void cld();
+    void cli();
     void bcc();
     void bcs();
     void beq();

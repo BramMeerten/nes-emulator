@@ -172,6 +172,30 @@ TEST_F(CpuTest, Sed)
   EXPECT_EQ(system.cpu.getStatus(), 0b0000'1000); // decimal = 1
 }
 
+TEST_F(CpuTest, Sei)
+{
+  // given
+  unsigned char data[2] = {0x78, 0x00}; // SEI;
+
+  // when
+  system.insertDisk(data, 2);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'0100); // interrupt = 1
+}
+
+TEST_F(CpuTest, Cli)
+{
+  // given
+  unsigned char data[3] = {0x78, 0x58, 0x00}; // CLI;
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'0000);
+}
+
 TEST_F(CpuTest, ASL_accumulator)
 {
   // given

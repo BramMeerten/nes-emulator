@@ -86,6 +86,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ABSOLUTE_X);
     case 0x50:
         return bvc();
+    case 0x58:
+        return cli();
     case 0x61:
         return adc(INDEXED_INDIRECT);
     case 0x65:
@@ -94,6 +96,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(IMMEDIATE);
     case 0x70:
         return bvs();
+    case 0x78:
+        return sei();
     case 0x6d:
         return adc(ABSOLUTE);
     case 0x71:
@@ -195,6 +199,18 @@ void Cpu::sec()
 void Cpu::sed()
 {
     status = status | 0b0000'1000;
+}
+
+// Set the interrupt disable flag to one.
+void Cpu::sei()
+{
+    status = status | 0b0000'0100;
+}
+
+// Clears the interrupt disable flag allowing normal interrupt requests to be serviced.
+void Cpu::cli()
+{
+    status = status & 0b1111'1011;
 }
 
 // A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
