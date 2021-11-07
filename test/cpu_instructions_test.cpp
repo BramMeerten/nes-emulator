@@ -717,3 +717,15 @@ TEST_F(CpuTest, CPY_greater)
   // then
   EXPECT_EQ(system.cpu.getStatus() & 0b1000'0011, 0b0000'0001);
 }
+
+TEST_F(CpuTest, NOP)
+{
+  // given
+  unsigned char data[4] = {0xea, 0xa9, 0x03, 0x00}; // NOP; LDA #03
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x03);
+}

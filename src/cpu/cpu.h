@@ -28,6 +28,7 @@ private:
     void updateCarryFlag(unsigned short result);
     void print();
 
+    void nop();
     void adc(AddressingMode addressingMode);
     void sec();
     void sed();

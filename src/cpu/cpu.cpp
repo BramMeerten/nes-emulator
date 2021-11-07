@@ -188,6 +188,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return cmp(ABSOLUTE_Y);
     case 0xdd:
         return cmp(ABSOLUTE_X);
+    case 0xea:
+        return nop();
     case 0xe0:
         return cpx(IMMEDIATE);
     case 0xe4:
@@ -204,6 +206,11 @@ void Cpu::execOpCode(unsigned char opCode)
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         exit(1);
     }
+}
+
+// The NOP instruction causes no changes to the processor other than the normal incrementing of the program counter to the next instruction.
+void Cpu::nop()
+{
 }
 
 // Adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
