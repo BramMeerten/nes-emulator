@@ -63,6 +63,7 @@ private:
     void pha();
     void php();
     void pla();
+    void plp();
 
     unsigned short getAddress(AddressingMode addressingMode);
 

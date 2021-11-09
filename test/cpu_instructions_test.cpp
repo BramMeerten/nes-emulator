@@ -758,10 +758,10 @@ TEST_F(CpuTest, PHA)
 TEST_F(CpuTest, PHP)
 {
   // given
-  unsigned char data[3] = {0x38, 0xf8, 0x08}; // SEC; SED; PHP
+  unsigned char data[4] = {0x38, 0xf8, 0x08, 0x00}; // SEC; SED; PHP
 
   // when
-  system.insertDisk(data, 3);
+  system.insertDisk(data, 4);
 
   // then
   EXPECT_EQ(system.memory.read(0x01ff), 0b0000'1001);
@@ -811,4 +811,16 @@ TEST_F(CpuTest, STACK_ROTATES)
   EXPECT_EQ(system.memory.read(0x01fe), 0x22);
   EXPECT_EQ(system.memory.read(0x0100), 0x16);
   EXPECT_EQ(system.cpu.getA(), 0x16);
+}
+
+TEST_F(CpuTest, PLP)
+{
+  // given
+  unsigned char data[7] = {0x38, 0xf8, 0x08, 0x18, 0xd8, 0x28, 0x00}; // SEC; SED; PHP; CLC; CLD; PLP;
+
+  // when
+  system.insertDisk(data, 7);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'1001);
 }

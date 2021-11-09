@@ -85,6 +85,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return bit(ZERO_PAGE);
     case 0x25:
         return andOp(ZERO_PAGE);
+    case 0x28:
+        return plp();
     case 0x29:
         return andOp(IMMEDIATE);
     case 0x2c:
@@ -538,6 +540,12 @@ void Cpu::pla()
 {
     a = pullStack();
     updateZeroAndNegativeFlag(a);
+}
+
+// Pulls an 8 bit value from the stack and into the processor flags. The flags will take on new states as determined by the value pulled.
+void Cpu::plp()
+{
+    status = pullStack();
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
