@@ -60,6 +60,7 @@ private:
     void cpy(AddressingMode addressingMode);
     void lsr(AddressingMode addressingMode);
     void pha();
+    void php();
 
     unsigned short getAddress(AddressingMode addressingMode);
 

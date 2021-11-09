@@ -754,3 +754,15 @@ TEST_F(CpuTest, PHA)
   EXPECT_EQ(system.memory.read(0x01ff), 0x15);
   EXPECT_EQ(system.memory.read(0x01fe), 0xa1);
 }
+
+TEST_F(CpuTest, PHP)
+{
+  // given
+  unsigned char data[3] = {0x38, 0xf8, 0x08}; // SEC; SED; PHP
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x01ff), 0b0000'1001);
+}

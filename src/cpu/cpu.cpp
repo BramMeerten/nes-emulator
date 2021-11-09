@@ -53,6 +53,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return ora(ZERO_PAGE);
     case 0x06:
         return asl(ZERO_PAGE);
+    case 0x08:
+        return php();
     case 0x09:
         return ora(IMMEDIATE);
     case 0x0a:
@@ -521,6 +523,12 @@ void Cpu::cpy(AddressingMode addressingMode)
 void Cpu::pha()
 {
     pushStack(a);
+}
+
+// Pushes a copy of the status flags on to the stack.
+void Cpu::php()
+{
+    pushStack(status);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
