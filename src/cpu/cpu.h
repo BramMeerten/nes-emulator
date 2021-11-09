@@ -27,6 +27,7 @@ private:
     void updateOverflowFlag(unsigned char result);
     void updateCarryFlag(unsigned short result);
     void pushStack(unsigned char value);
+    unsigned char pullStack();
     void print();
 
     void nop();
@@ -61,6 +62,7 @@ private:
     void lsr(AddressingMode addressingMode);
     void pha();
     void php();
+    void pla();
 
     unsigned short getAddress(AddressingMode addressingMode);
 

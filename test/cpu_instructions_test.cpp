@@ -766,3 +766,49 @@ TEST_F(CpuTest, PHP)
   // then
   EXPECT_EQ(system.memory.read(0x01ff), 0b0000'1001);
 }
+
+TEST_F(CpuTest, PLA)
+{
+  // given
+  unsigned char data[10] = {
+    0xa9, 0x15, 0x48,  // LDA #15; PHA; 
+    0xa9, 0xa1, 0x48,  // LDA #a1; PHA
+    0xa9, 0x10,        // LDA #10;
+    0x68, 0x00};       // PLA
+
+  // when
+  system.insertDisk(data, 10);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x01ff), 0x15);
+  EXPECT_EQ(system.cpu.getA(), 0xa1);
+}
+
+// Rotate so much data that stack rotates from 0x0100 to 0x01ff
+// Pull twice so stack rotates from 0x01ff to 0x0100
+TEST_F(CpuTest, STACK_ROTATES)
+{
+  // given
+  unsigned char data[(3 * 257) + 2 + 2 + 1];
+  int b = 0;
+  data[b++] = 0xa9; data[b++] = 0x15; data[b++] = 0x48; // LDA #15; PHA; 
+
+  for (int i=0; i<254; i++) {
+    data[b++] = 0xa9; data[b++] = 0x22; data[b++] = 0x48; // LDA #22; PHA; 
+  }
+
+  data[b++] = 0xa9; data[b++] = 0x16; data[b++] = 0x48; // LDA #16; PHA; 
+  data[b++] = 0xa9; data[b++] = 0x17; data[b++] = 0x48; // LDA #17; PHA; 
+  data[b++] = 0xa9; data[b++] = 0x01; // LDA #01;
+  data[b++] = 0x68; data[b++] = 0x68; // PLA; PLA;
+  data[b++] = 0x00;
+
+  // when
+  system.insertDisk(data, (3 * 257) + 2 + 2 + 1);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x01ff), 0x17);
+  EXPECT_EQ(system.memory.read(0x01fe), 0x22);
+  EXPECT_EQ(system.memory.read(0x0100), 0x16);
+  EXPECT_EQ(system.cpu.getA(), 0x16);
+}

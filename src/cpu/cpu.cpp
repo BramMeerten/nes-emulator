@@ -123,6 +123,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(INDEXED_INDIRECT);
     case 0x65:
         return adc(ZERO_PAGE);
+    case 0x68:
+        return pla();
     case 0x69:
         return adc(IMMEDIATE);
     case 0x6d:
@@ -531,6 +533,13 @@ void Cpu::php()
     pushStack(status);
 }
 
+// Pulls an 8 bit value from the stack and into the accumulator. The zero and negative flags are set as appropriate.
+void Cpu::pla()
+{
+    a = pullStack();
+    updateZeroAndNegativeFlag(a);
+}
+
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
 {
     updateZeroFlag(result);
@@ -578,6 +587,13 @@ void Cpu::pushStack(unsigned char value)
 {
     system->memory.write_8(getSP_16(), value);
     sp--;
+}
+
+unsigned char Cpu::pullStack()
+{
+    sp++;
+    unsigned char value = system->memory.read(getSP_16());
+    return value;
 }
 
 unsigned short Cpu::getAddress(AddressingMode addressingMode)
