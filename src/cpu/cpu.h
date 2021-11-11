@@ -34,6 +34,7 @@ private:
 
     void nop();
     void adc(AddressingMode addressingMode);
+    void sbc(AddressingMode addressingMode);
     void sec();
     void sed();
     void sei();

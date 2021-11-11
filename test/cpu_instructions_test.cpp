@@ -940,3 +940,42 @@ TEST_F(CpuTest, JSR_RTS)
   EXPECT_EQ(system.cpu.getY(), 0x13);
   EXPECT_EQ(system.cpu.getA(), 0x14);
 }
+
+TEST_F(CpuTest, SBC_set_carry)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0x33, 0xe9, 0x12, 0x00}; // LDA #33; SBC #12;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x20); // 33 - (12 + ~carry)
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'0001); // carry = 1
+}
+
+TEST_F(CpuTest, SBC_clear_carry)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0x12, 0xe9, 0x33, 0x00}; // LDA #12; SBC #33;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0xde); // 0x12 - (0x33 + ~carry) = -0x22 = 0xde (overflow)
+  EXPECT_EQ(system.cpu.getStatus(), 0b1100'0000); // overflow = 1, carry = 0
+}
+
+TEST_F(CpuTest, SBC_carry_is_set)
+{
+  // given
+  unsigned char data[6] = {0x38, 0xa9, 0x33, 0xe9, 0x12, 0x00}; // SEC; LDA #33; SBC #12;
+
+  // when
+  system.insertDisk(data, 6);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x21); // 33 - (12 + ~carry)
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'0001); // carry = 1
+}

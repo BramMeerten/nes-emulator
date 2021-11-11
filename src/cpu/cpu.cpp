@@ -239,20 +239,36 @@ void Cpu::execOpCode(unsigned char opCode)
         return cmp(ABSOLUTE_Y);
     case 0xdd:
         return cmp(ABSOLUTE_X);
-    case 0xea:
-        return nop();
     case 0xe0:
         return cpx(IMMEDIATE);
+    case 0xe1:
+        return sbc(INDEXED_INDIRECT);
     case 0xe4:
         return cpx(ZERO_PAGE);
+    case 0xe5:
+        return sbc(ZERO_PAGE);
     case 0xe8:
         return inx();
+    case 0xe9:
+        return sbc(IMMEDIATE);
+    case 0xea:
+        return nop();
     case 0xec:
         return cpx(ABSOLUTE);
+    case 0xed:
+        return sbc(ABSOLUTE);
     case 0xf0:
         return beq();
+    case 0xf1:
+        return sbc(INDIRECT_INDEXED);
+    case 0xf5:
+        return sbc(ZERO_PAGE_X);
     case 0xf8:
         return sed();
+    case 0xf9:
+        return sbc(ABSOLUTE_Y);
+    case 0xfd:
+        return sbc(ABSOLUTE_X);
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         exit(1);
@@ -272,6 +288,34 @@ void Cpu::adc(AddressingMode addressingMode)
     unsigned short result = a + value + getCarry();
     updateZeroAndNegativeFlag(result);
     updateCarryFlag(result);
+
+    // Overflow flag. Set if result if two's complement is outside -128, +127 range.
+    // This can only happen if:
+    // - Two positive numbers are added, and the result is a negative number.
+    // - Two negative numbers are added, and the result is a positive number.
+    // Simplification: Sign of both inputs is different from the sign of the result.
+    // Overflow occurs if (M^result) & (N^result) & 0b1000'0000 is nonzero.
+    if ((a ^ result) & (value ^ result) & 0b1000'0000)
+        status = status | 0b0100'0000;
+    else
+        status = status & 0b1011'1111;
+
+    a = result;
+}
+
+// Subtracts the contents of a memory location to the accumulator together with the not of the carry bit. If overflow occurs the carry bit is clear, this enables multiple byte subtraction to be performed.
+void Cpu::sbc(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned char value = system->memory.read(getAddress(addressingMode));
+    unsigned short result = a - (value + (getCarry() ? 0 : 1));
+    updateZeroAndNegativeFlag(result);
+    
+    // clear carry flag if bit 7 overflow
+    if (result > 0xff)
+        status = status & 0b1111'1110;
+    else
+        status = status | 0b0000'0001;
 
     // Overflow flag. Set if result if two's complement is outside -128, +127 range.
     // This can only happen if:
