@@ -28,6 +28,7 @@ private:
     void updateCarryFlag(unsigned short result);
     void pushStack(unsigned char value);
     unsigned char pullStack();
+    unsigned short pullStack_16();
     void print();
 
     void nop();
@@ -66,6 +67,7 @@ private:
     void php();
     void pla();
     void plp();
+    void rti();
 
     unsigned short getAddress(AddressingMode addressingMode);
 

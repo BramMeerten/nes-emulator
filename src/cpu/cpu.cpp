@@ -115,6 +115,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ABSOLUTE_X);
     case 0x3e:
         return rol(ABSOLUTE_X);
+    case 0x40:
+        return rti();
     case 0x46:
         return lsr(ZERO_PAGE);
     case 0x48:
@@ -608,6 +610,14 @@ void Cpu::plp()
     status = pullStack();
 }
 
+// The RTI instruction is used at the end of an interrupt processing routine. It pulls the processor flags from the stack followed by the program counter.
+void Cpu::rti()
+{
+    status = pullStack();
+    pc = pullStack_16();
+    std::cout << "RTI" << std::hex << (int) pc << std::endl;
+}
+
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
 {
     updateZeroFlag(result);
@@ -662,6 +672,15 @@ unsigned char Cpu::pullStack()
     sp++;
     unsigned char value = system->memory.read(getSP_16());
     return value;
+}
+
+unsigned short Cpu::pullStack_16()
+{
+    sp++;
+    unsigned short p2 = system->memory.read(getSP_16());
+    sp++;
+    unsigned short p1 = system->memory.read(getSP_16());
+    return (p2 << 8) | p1;;
 }
 
 unsigned short Cpu::getAddress(AddressingMode addressingMode)

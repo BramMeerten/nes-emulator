@@ -904,3 +904,21 @@ TEST_F(CpuTest, ROR_ZERO_PAGE)
   EXPECT_EQ(system.memory.read(0x12), 0b0111'0011);
   EXPECT_EQ(system.cpu.getStatus() & 0x01, 0); // carry == 0
 }
+
+TEST_F(CpuTest, RTI)
+{
+  // given
+  system.memory.write_8(0x9012, 0x00);
+  unsigned char data[10] = {
+    0xa9, 0x12, 0x48, 0xa9, 0x90, 0x48,   // LDA #12; PHA; LDA #90; PHA; --> PC 0x9012
+    0xa9, 0x32, 0x48,                     // LDA #32; PHA;               --> status 0x32
+    0x40                                  // RTI
+  };
+
+  // when
+  system.insertDisk(data, 10);
+
+  // then
+  EXPECT_EQ(system.cpu.getPC(), 0x9013);
+  EXPECT_EQ(system.cpu.getStatus(), 0x32);
+}
