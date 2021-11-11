@@ -910,7 +910,7 @@ TEST_F(CpuTest, RTI)
   // given
   system.memory.write_8(0x9012, 0x00);
   unsigned char data[10] = {
-    0xa9, 0x12, 0x48, 0xa9, 0x90, 0x48,   // LDA #12; PHA; LDA #90; PHA; --> PC 0x9012
+    0xa9, 0x90, 0x48, 0xa9, 0x12, 0x48,   // LDA #90; PHA; LDA #12; PHA; --> PC 0x9012
     0xa9, 0x32, 0x48,                     // LDA #32; PHA;               --> status 0x32
     0x40                                  // RTI
   };
@@ -921,4 +921,22 @@ TEST_F(CpuTest, RTI)
   // then
   EXPECT_EQ(system.cpu.getPC(), 0x9013);
   EXPECT_EQ(system.cpu.getStatus(), 0x32);
+}
+
+TEST_F(CpuTest, JSR_RTS)
+{
+  // given
+  unsigned char subroutine[5] = {0xa0, 0x13, 0xa9, 0x88, 0x60}; // LDY #13; LDA #88; RTS;
+  system.memory.write(0x9021, subroutine, 5);
+  unsigned char data[8] = {
+      0xa2, 0x12, 0x20, 0x21, 0x90, 0xa9, 0x14, 0x00 // LDX #12, JSR $9021, LDA #14;
+  };
+
+  // when
+  system.insertDisk(data, 8);
+
+  // then
+  EXPECT_EQ(system.cpu.getX(), 0x12);
+  EXPECT_EQ(system.cpu.getY(), 0x13);
+  EXPECT_EQ(system.cpu.getA(), 0x14);
 }

@@ -79,6 +79,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return ora(ABSOLUTE_X);
     case 0x1e:
         return asl(ABSOLUTE_X);
+    case 0x20:
+        return jsr();
     case 0x21:
         return andOp(INDEXED_INDIRECT);
     case 0x24:
@@ -133,6 +135,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return cli();
     case 0x5e:
         return lsr(ABSOLUTE_X);
+    case 0x60:
+        return rts();
     case 0x61:
         return adc(INDEXED_INDIRECT);
     case 0x65:
@@ -411,6 +415,21 @@ void Cpu::ror(AddressingMode addressingMode)
     status = (status & ~0x01) | newCarry; // set carry flag
 }
 
+// The JSR instruction pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
+void Cpu::jsr()
+{
+    pc++;
+    unsigned short address = getAddress(ABSOLUTE) - 1;
+    pushStack_16(pc + 1);
+    pc = address;
+}
+
+// The RTS instruction is used at the end of a subroutine to return to the calling routine. It pulls the program counter (minus one) from the stack.
+void Cpu::rts()
+{
+    pc = pullStack_16() - 1;
+}
+
 // Set the carry flag to zero.
 void Cpu::clc()
 {
@@ -615,7 +634,6 @@ void Cpu::rti()
 {
     status = pullStack();
     pc = pullStack_16();
-    std::cout << "RTI" << std::hex << (int) pc << std::endl;
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
@@ -667,6 +685,14 @@ void Cpu::pushStack(unsigned char value)
     sp--;
 }
 
+void Cpu::pushStack_16(unsigned short value)
+{
+    unsigned char p1 = value & 0x00ff;
+    unsigned char p2 = value >> 8;
+    pushStack(p2);
+    pushStack(p1);
+}
+
 unsigned char Cpu::pullStack()
 {
     sp++;
@@ -676,11 +702,9 @@ unsigned char Cpu::pullStack()
 
 unsigned short Cpu::pullStack_16()
 {
-    sp++;
-    unsigned short p2 = system->memory.read(getSP_16());
-    sp++;
-    unsigned short p1 = system->memory.read(getSP_16());
-    return (p2 << 8) | p1;;
+    unsigned short p1 = pullStack();
+    unsigned short p2 = pullStack();
+    return (p2 << 8) | p1;
 }
 
 unsigned short Cpu::getAddress(AddressingMode addressingMode)
@@ -732,5 +756,6 @@ void Cpu::print()
     std::cout << "Program Counter: " << pc << std::endl;
     std::cout << "Register A: " << std::hex << (int)a << std::endl;
     std::cout << "Register X: " << std::hex << (int)x << std::endl;
+    std::cout << "Register Y: " << std::hex << (int)y << std::endl;
     std::cout << "Status: " << std::bitset<8>(status) << std::endl;
 }
