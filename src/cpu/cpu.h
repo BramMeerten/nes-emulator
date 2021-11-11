@@ -39,6 +39,7 @@ private:
     void andOp(AddressingMode addressingMode);
     void ora(AddressingMode addressingMode);
     void asl(AddressingMode AddressingMode);
+    void rol(AddressingMode AddressingMode);
     void clc();
     void cld();
     void cli();

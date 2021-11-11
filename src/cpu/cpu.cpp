@@ -85,26 +85,36 @@ void Cpu::execOpCode(unsigned char opCode)
         return bit(ZERO_PAGE);
     case 0x25:
         return andOp(ZERO_PAGE);
+    case 0x26:
+        return rol(ZERO_PAGE);
     case 0x28:
         return plp();
     case 0x29:
         return andOp(IMMEDIATE);
+    case 0x2a:
+        return rol(ACCUMULATOR);
     case 0x2c:
         return bit(ABSOLUTE);
     case 0x2d:
         return andOp(ABSOLUTE);
+    case 0x2e:
+        return rol(ABSOLUTE);
     case 0x30:
         return bmi();
     case 0x31:
         return andOp(INDIRECT_INDEXED);
     case 0x35:
         return andOp(ZERO_PAGE_X);
+    case 0x36:
+        return rol(ZERO_PAGE_X);
     case 0x38:
         return sec();
     case 0x39:
         return andOp(ABSOLUTE_Y);
     case 0x3d:
         return andOp(ABSOLUTE_X);
+    case 0x3e:
+        return rol(ABSOLUTE_X);
     case 0x46:
         return lsr(ZERO_PAGE);
     case 0x48:
@@ -347,6 +357,24 @@ void Cpu::lsr(AddressingMode addressingMode)
     }
 
     status = (status & ~0x01) | (originalValue & 0x01); // set carry flag
+}
+
+// Move each of the bits in either A or M one place to the left. Bit 0 is filled with the current value of the carry flag whilst the old bit 7 becomes the new carry flag value.
+void Cpu::rol(AddressingMode addressingMode)
+{
+    unsigned char originalValue;
+    if (addressingMode == ACCUMULATOR) {
+        originalValue = a;
+        a = (a << 1) | (status & 0x01);
+    } else {
+        pc++;
+        unsigned short address = getAddress(addressingMode);
+        originalValue = system->memory.read(address);
+        system->memory.write_8(address, (originalValue << 1) | (status & 0x01));
+    }
+
+    unsigned char newCarry = (originalValue & 0b1000'0000) >> 7;
+    status = (status & ~0x01) | newCarry; // set carry flag
 }
 
 // Set the carry flag to zero.
