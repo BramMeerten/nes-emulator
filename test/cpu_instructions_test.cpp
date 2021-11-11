@@ -864,3 +864,43 @@ TEST_F(CpuTest, ROL_ZERO_PAGE)
   EXPECT_EQ(system.memory.read(0x12), 0b1100'1100);
   EXPECT_EQ(system.cpu.getStatus() & 0x01, 1); // carry == 1
 }
+
+TEST_F(CpuTest, ROR_ACCUMULATOR_NO_CARRY)
+{
+  // given
+  unsigned char data[4] = {0xa9, 0b0111'0101, 0x6a, 0x00}; // LDA #0b0111'0101; ROR A;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0b0011'1010);
+  EXPECT_EQ(system.cpu.getStatus() & 0x01, 1); // carry == 1
+}
+
+TEST_F(CpuTest, ROR_ACCUMULATOR_CARRY)
+{
+  // given
+  unsigned char data[5] = {0x38, 0xa9, 0b0111'0100, 0x6a, 0x00}; // SEC; LDA #0b0111'0101; ROR A;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0b1011'1010);
+  EXPECT_EQ(system.cpu.getStatus() & 0x01, 0); // carry == 0
+}
+
+TEST_F(CpuTest, ROR_ZERO_PAGE)
+{
+  // given
+  system.memory.write_8(0x12, 0b1110'0110);
+  unsigned char data[3] = {0x66, 0x12, 0x00}; // ROR $12;
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x12), 0b0111'0011);
+  EXPECT_EQ(system.cpu.getStatus() & 0x01, 0); // carry == 0
+}

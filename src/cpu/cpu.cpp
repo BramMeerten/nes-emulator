@@ -135,24 +135,34 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(INDEXED_INDIRECT);
     case 0x65:
         return adc(ZERO_PAGE);
+    case 0x66:
+        return ror(ZERO_PAGE);
     case 0x68:
         return pla();
     case 0x69:
         return adc(IMMEDIATE);
+    case 0x6a:
+        return ror(ACCUMULATOR);
     case 0x6d:
         return adc(ABSOLUTE);
+    case 0x6e:
+        return ror(ABSOLUTE);
     case 0x70:
         return bvs();
     case 0x71:
         return adc(INDIRECT_INDEXED);
     case 0x75:
         return adc(ZERO_PAGE_X);
+    case 0x76:
+        return ror(ZERO_PAGE_X);
     case 0x78:
         return sei();
     case 0x79:
         return adc(ABSOLUTE_Y);
     case 0x7d:
         return adc(ABSOLUTE_X);
+    case 0x7e:
+        return ror(ABSOLUTE_X);
     case 0x90:
         return bcc();
     case 0xa0:
@@ -366,14 +376,36 @@ void Cpu::rol(AddressingMode addressingMode)
     if (addressingMode == ACCUMULATOR) {
         originalValue = a;
         a = (a << 1) | (status & 0x01);
+        updateZeroAndNegativeFlag(a);
     } else {
         pc++;
         unsigned short address = getAddress(addressingMode);
         originalValue = system->memory.read(address);
         system->memory.write_8(address, (originalValue << 1) | (status & 0x01));
+        updateZeroAndNegativeFlag((originalValue << 1) | (status & 0x01));
     }
 
     unsigned char newCarry = (originalValue & 0b1000'0000) >> 7;
+    status = (status & ~0x01) | newCarry; // set carry flag
+}
+
+// Move each of the bits in either A or M one place to the right. Bit 7 is filled with the current value of the carry flag whilst the old bit 0 becomes the new carry flag value.
+void Cpu::ror(AddressingMode addressingMode)
+{
+    unsigned char originalValue;
+    if (addressingMode == ACCUMULATOR) {
+        originalValue = a;
+        a = (a >> 1) | ((status & 0x01) << 7);
+        updateZeroAndNegativeFlag(a);
+    } else {
+        pc++;
+        unsigned short address = getAddress(addressingMode);
+        originalValue = system->memory.read(address);
+        system->memory.write_8(address, (originalValue >> 1) | ((status & 0x01) << 7));
+        updateZeroAndNegativeFlag((originalValue >> 1) | ((status & 0x01) << 7));
+    }
+
+    unsigned char newCarry = (originalValue & 0b0000'0001);
     status = (status & ~0x01) | newCarry; // set carry flag
 }
 

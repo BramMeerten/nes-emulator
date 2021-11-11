@@ -40,6 +40,7 @@ private:
     void ora(AddressingMode addressingMode);
     void asl(AddressingMode AddressingMode);
     void rol(AddressingMode AddressingMode);
+    void ror(AddressingMode AddressingMode);
     void clc();
     void cld();
     void cli();
