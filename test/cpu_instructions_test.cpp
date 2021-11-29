@@ -1091,3 +1091,16 @@ TEST_F(CpuTest, TYA)
   EXPECT_EQ(system.cpu.getA(), 0xfe); 
   EXPECT_EQ(system.cpu.getStatus(), 0b1000'0000);
 }
+
+TEST_F(CpuTest, DEC)
+{
+  // given
+  unsigned char data[7] = {0xa9, 0xfd, 0x85, 0x54, 0xc6, 0x54, 0x00}; // LDA #14; STA $54; DEC $54;
+
+  // when
+  system.insertDisk(data, 7);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x54), 0xfc); 
+  EXPECT_EQ(system.cpu.getStatus(), 0b1000'0000);
+}

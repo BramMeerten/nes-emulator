@@ -273,24 +273,32 @@ void Cpu::execOpCode(unsigned char opCode)
         return cpy(ZERO_PAGE);
     case 0xc5:
         return cmp(ZERO_PAGE);
+    case 0xc6:
+        return dec(ZERO_PAGE);
     case 0xc9:
         return cmp(IMMEDIATE);
     case 0xcc:
         return cpy(ABSOLUTE);
     case 0xcd:
         return cmp(ABSOLUTE);
+    case 0xce:
+        return dec(ABSOLUTE);
     case 0xd0:
         return bne();
     case 0xd1:
         return cmp(INDIRECT_INDEXED);
     case 0xd5:
         return cmp(ZERO_PAGE_X);
+    case 0xd6:
+        return dec(ZERO_PAGE_X);
     case 0xd8:
         return cld();
     case 0xd9:
         return cmp(ABSOLUTE_Y);
     case 0xdd:
         return cmp(ABSOLUTE_X);
+    case 0xde:
+        return dec(ABSOLUTE_X);
     case 0xe0:
         return cpx(IMMEDIATE);
     case 0xe1:
@@ -796,6 +804,16 @@ void Cpu::rti()
 {
     status = pullStack();
     pc = pullStack_16();
+}
+
+// Subtracts one from the value held at a specified memory location setting the zero and negative flags as appropriate.
+void Cpu::dec(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned short addr = getAddress(addressingMode);
+    unsigned char mem = system->memory.read(addr);
+    system->memory.write_8(addr, mem - 1);
+    updateZeroAndNegativeFlag(mem - 1);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

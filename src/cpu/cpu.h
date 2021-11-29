@@ -82,6 +82,7 @@ private:
     void pla();
     void plp();
     void rti();
+    void dec(AddressingMode addressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 
