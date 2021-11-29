@@ -235,6 +235,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return clv();
     case 0xb9:
         return lda(ABSOLUTE_Y);
+    case 0xba:
+        return tsx();
     case 0xbc:
         return ldy(ABSOLUTE_X);
     case 0xbd:
@@ -644,6 +646,13 @@ void Cpu::tay()
 {
     y = a;
     updateZeroAndNegativeFlag(y);
+}
+
+// Copies the current contents of the stack register into the X register and sets the zero and negative flags as appropriate.
+void Cpu::tsx()
+{
+    x = sp;
+    updateZeroAndNegativeFlag(x);
 }
 
 // Adds one to the X register setting the zero and negative flags as appropriate.

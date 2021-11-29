@@ -64,6 +64,7 @@ private:
     void ldy(AddressingMode addressingMode);
     void tax();
     void tay();
+    void tsx();
     void inx();
     void cmp(AddressingMode addressingMode);
     void cpx(AddressingMode addressingMode);

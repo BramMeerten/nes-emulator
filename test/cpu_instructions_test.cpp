@@ -1028,3 +1028,16 @@ TEST_F(CpuTest, STY)
   // then
   EXPECT_EQ(system.memory.read(0x99), 0x33);
 }
+
+TEST_F(CpuTest, TSX)
+{
+  // given
+  unsigned char data[3] = {0x48, 0xba, 0x00}; // PHA; TSX;
+
+  // when
+  system.insertDisk(data, 3);
+
+  // then
+  EXPECT_EQ(system.cpu.getX(), 0xfe); // sp initial value is #ff, pushed one item to stack --> #fe
+  EXPECT_EQ(system.cpu.getStatus(), 0b1000'0000);
+}
