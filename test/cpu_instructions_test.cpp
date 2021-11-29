@@ -1003,3 +1003,15 @@ TEST_F(CpuTest, STX)
   // then
   EXPECT_EQ(system.memory.read(0x99), 0x33);
 }
+
+TEST_F(CpuTest, STY)
+{
+  // given
+  unsigned char data[5] = {0xa0, 0x33, 0x84, 0x99, 0x00}; // LDY #33; STY $99;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x99), 0x33);
+}

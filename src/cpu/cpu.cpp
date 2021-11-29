@@ -171,10 +171,14 @@ void Cpu::execOpCode(unsigned char opCode)
         return ror(ABSOLUTE_X);
     case 0x81:
         return sta(INDEXED_INDIRECT);
+    case 0x84:
+        return sty(ZERO_PAGE);
     case 0x85:
         return sta(ZERO_PAGE);
     case 0x86:
         return stx(ZERO_PAGE);
+    case 0x8c:
+        return sty(ABSOLUTE);
     case 0x8d:
         return sta(ABSOLUTE);
     case 0x8e:
@@ -183,6 +187,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return bcc();
     case 0x91:
         return sta(INDIRECT_INDEXED);
+    case 0x94:
+        return sty(ZERO_PAGE_X);
     case 0x95:
         return sta(ZERO_PAGE_X);
     case 0x96:
@@ -383,6 +389,14 @@ void Cpu::stx(AddressingMode addressingMode)
     pc++;
     unsigned short address = getAddress(addressingMode);
     system->memory.write_8(address, x);
+}
+
+// Stores the contents of the Y register into memory.
+void Cpu::sty(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned short address = getAddress(addressingMode);
+    system->memory.write_8(address, y);
 }
 
 // Clears the interrupt disable flag allowing normal interrupt requests to be serviced.
