@@ -119,20 +119,36 @@ void Cpu::execOpCode(unsigned char opCode)
         return rol(ABSOLUTE_X);
     case 0x40:
         return rti();
+    case 0x41:
+        return eor(INDEXED_INDIRECT);
+    case 0x45:
+        return eor(ZERO_PAGE);
     case 0x46:
         return lsr(ZERO_PAGE);
     case 0x48:
         return pha();
+    case 0x49:
+        return eor(IMMEDIATE);
     case 0x4a:
         return lsr(ACCUMULATOR);
+    case 0x4d:
+        return eor(ABSOLUTE);
     case 0x4e:
         return lsr(ABSOLUTE);
     case 0x50:
         return bvc();
+    case 0x51:
+        return eor(INDIRECT_INDEXED);
+    case 0x55:
+        return eor(ZERO_PAGE_X);
     case 0x56:
         return lsr(ZERO_PAGE_X);
     case 0x58:
         return cli();
+    case 0x59:
+        return eor(ABSOLUTE_Y);
+    case 0x5d:
+        return eor(ABSOLUTE_X);
     case 0x5e:
         return lsr(ABSOLUTE_X);
     case 0x60:
@@ -428,6 +444,14 @@ void Cpu::ora(AddressingMode addressingMode)
 {
     pc++;
     a = a | system->memory.read(getAddress(addressingMode));
+    updateZeroAndNegativeFlag(a);
+}
+
+// An exclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
+void Cpu::eor(AddressingMode addressingMode)
+{
+    pc++;
+    a = a ^ system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(a);
 }
 
