@@ -1041,3 +1041,16 @@ TEST_F(CpuTest, TSX)
   EXPECT_EQ(system.cpu.getX(), 0xfe); // sp initial value is #ff, pushed one item to stack --> #fe
   EXPECT_EQ(system.cpu.getStatus(), 0b1000'0000);
 }
+
+TEST_F(CpuTest, TXA)
+{
+  // given
+  unsigned char data[4] = {0xa2, 0x14, 0x8a, 0x00}; // LDX #14; TXA;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x14); 
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'0000);
+}

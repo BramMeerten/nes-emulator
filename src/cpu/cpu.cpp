@@ -177,6 +177,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return sta(ZERO_PAGE);
     case 0x86:
         return stx(ZERO_PAGE);
+    case 0x8a:
+        return txa();
     case 0x8c:
         return sty(ABSOLUTE);
     case 0x8d:
@@ -653,6 +655,13 @@ void Cpu::tsx()
 {
     x = sp;
     updateZeroAndNegativeFlag(x);
+}
+
+// Copies the current contents of the X register into the accumulator and sets the zero and negative flags as appropriate.
+void Cpu::txa()
+{
+    a = x;
+    updateZeroAndNegativeFlag(a);
 }
 
 // Adds one to the X register setting the zero and negative flags as appropriate.
