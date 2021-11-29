@@ -979,3 +979,15 @@ TEST_F(CpuTest, SBC_carry_is_set)
   EXPECT_EQ(system.cpu.getA(), 0x21); // 33 - (12 + ~carry)
   EXPECT_EQ(system.cpu.getStatus(), 0b0000'0001); // carry = 1
 }
+
+TEST_F(CpuTest, STA)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0x33, 0x85, 0x99, 0x00}; // LDA #33; STA $99;
+
+  // when
+  system.insertDisk(data, 5);
+
+  // then
+  EXPECT_EQ(system.memory.read(0x99), 0x33);
+}
