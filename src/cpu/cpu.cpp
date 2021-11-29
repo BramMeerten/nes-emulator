@@ -173,14 +173,20 @@ void Cpu::execOpCode(unsigned char opCode)
         return sta(INDEXED_INDIRECT);
     case 0x85:
         return sta(ZERO_PAGE);
+    case 0x86:
+        return stx(ZERO_PAGE);
     case 0x8d:
         return sta(ABSOLUTE);
+    case 0x8e:
+        return stx(ABSOLUTE);
     case 0x90:
         return bcc();
     case 0x91:
         return sta(INDIRECT_INDEXED);
     case 0x95:
         return sta(ZERO_PAGE_X);
+    case 0x96:
+        return stx(ZERO_PAGE_Y);
     case 0x99:
         return sta(ABSOLUTE_Y);
     case 0x9d:
@@ -369,6 +375,14 @@ void Cpu::sta(AddressingMode addressingMode)
     pc++;
     unsigned short address = getAddress(addressingMode);
     system->memory.write_8(address, a);
+}
+
+// Stores the contents of the X register into memory.
+void Cpu::stx(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned short address = getAddress(addressingMode);
+    system->memory.write_8(address, x);
 }
 
 // Clears the interrupt disable flag allowing normal interrupt requests to be serviced.

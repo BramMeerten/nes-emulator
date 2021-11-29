@@ -39,6 +39,7 @@ private:
     void sed();
     void sei();
     void sta(AddressingMode addressingMode);
+    void stx(AddressingMode addressingMode);
     void bit(AddressingMode addressingMode);
     void andOp(AddressingMode addressingMode);
     void ora(AddressingMode addressingMode);
