@@ -209,6 +209,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return lda(ZERO_PAGE);
     case 0xa6:
         return ldx(ZERO_PAGE);
+    case 0xa8:
+        return tay();
     case 0xa9:
         return lda(IMMEDIATE);
     case 0xaa:
@@ -635,6 +637,13 @@ void Cpu::tax()
 {
     x = a;
     updateZeroAndNegativeFlag(x);
+}
+
+// Copies the current contents of the accumulator into the Y register and sets the zero and negative flags as appropriate.
+void Cpu::tay()
+{
+    y = a;
+    updateZeroAndNegativeFlag(y);
 }
 
 // Adds one to the X register setting the zero and negative flags as appropriate.

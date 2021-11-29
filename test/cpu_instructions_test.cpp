@@ -60,6 +60,19 @@ TEST_F(CpuTest, TaxSetsXRegister)
   EXPECT_EQ(system.cpu.getStatus(), 0b1000'0000);
 }
 
+TEST_F(CpuTest, TAY)
+{
+  // given
+  unsigned char data[4] = {0xa9, 0x80, 0xa8, 0x00}; // LDA #80; TAY;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getY(), 0x80);
+  EXPECT_EQ(system.cpu.getStatus(), 0b1000'0000);
+}
+
 TEST_F(CpuTest, InxIncreasesTheXRegister)
 {
   // given
