@@ -195,6 +195,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return sta(ZERO_PAGE_X);
     case 0x96:
         return stx(ZERO_PAGE_Y);
+    case 0x98:
+        return tya();
     case 0x99:
         return sta(ABSOLUTE_Y);
     case 0x9a:
@@ -670,6 +672,13 @@ void Cpu::txa()
 void Cpu::txs()
 {
     sp = x;
+}
+
+// Copies the current contents of the Y register into the accumulator and sets the zero and negative flags as appropriate.
+void Cpu::tya()
+{
+    a = y;
+    updateZeroAndNegativeFlag(a);
 }
 
 // Adds one to the X register setting the zero and negative flags as appropriate.
