@@ -15,6 +15,7 @@ public:
     unsigned char getA() { return a; };
     unsigned char getX() { return x; };
     unsigned char getY() { return y; };
+    unsigned char getSP() { return sp; };
     unsigned char getStatus() { return status; };
     unsigned char getZero() { return (status & 0b0000'0010) >> 1; }
 
@@ -66,6 +67,7 @@ private:
     void tay();
     void tsx();
     void txa();
+    void txs();
     void inx();
     void cmp(AddressingMode addressingMode);
     void cpx(AddressingMode addressingMode);

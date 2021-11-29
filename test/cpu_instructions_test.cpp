@@ -1054,3 +1054,15 @@ TEST_F(CpuTest, TXA)
   EXPECT_EQ(system.cpu.getA(), 0x14); 
   EXPECT_EQ(system.cpu.getStatus(), 0b0000'0000);
 }
+
+TEST_F(CpuTest, TXS)
+{
+  // given
+  unsigned char data[4] = {0xa2, 0x33, 0x9a, 0x00}; // LDX #14; TXS;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getSP(), 0x33);
+}

@@ -197,6 +197,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return stx(ZERO_PAGE_Y);
     case 0x99:
         return sta(ABSOLUTE_Y);
+    case 0x9a:
+        return txs();
     case 0x9d:
         return sta(ABSOLUTE_X);
     case 0xa0:
@@ -662,6 +664,12 @@ void Cpu::txa()
 {
     a = x;
     updateZeroAndNegativeFlag(a);
+}
+
+// Copies the current contents of the X register into the stack register.
+void Cpu::txs()
+{
+    sp = x;
 }
 
 // Adds one to the X register setting the zero and negative flags as appropriate.
