@@ -46,13 +46,14 @@ private:
     void andOp(AddressingMode addressingMode);
     void ora(AddressingMode addressingMode);
     void eor(AddressingMode addressingMode);
-    void asl(AddressingMode AddressingMode);
-    void rol(AddressingMode AddressingMode);
-    void ror(AddressingMode AddressingMode);
+    void asl(AddressingMode addressingMode);
+    void rol(AddressingMode addressingMode);
+    void ror(AddressingMode addressingMode);
     void clc();
     void cld();
     void cli();
     void clv();
+    void jmp(AddressingMode addressingMode);
     void bcc();
     void bcs();
     void beq();

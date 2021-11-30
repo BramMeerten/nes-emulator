@@ -1144,3 +1144,17 @@ TEST_F(CpuTest, INC)
   EXPECT_EQ(system.memory.read(0x54), 0xfe); 
   EXPECT_EQ(system.cpu.getStatus(), 0b1000'0000);
 }
+
+TEST_F(CpuTest, JMP)
+{
+  // given
+  unsigned char jumpInstructions[3] = {0xa9, 0x13, 0x00}; // LDA #13; BRK
+  system.memory.write(0x1234, jumpInstructions, 3);
+  unsigned char data[6] = {0x4c, 0x34, 0x12, 0xa9, 0x12, 0x00}; // JMP $1234; LDA #12; BRK;
+
+  // when
+  system.insertDisk(data, 6);
+
+  // then
+  EXPECT_EQ(system.cpu.getA(), 0x13);
+}

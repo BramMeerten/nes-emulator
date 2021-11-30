@@ -126,19 +126,20 @@ TEST_F(CpuAddressingModeTest, AbsoluteY)
   EXPECT_EQ(system.cpu.getA(), EXPECTED_RESULT);
 }
 
-// TEST_F(CpuAddressingModeTest, Indirect)
-// {
-//   // given
-//   system.memory.write_16(0xccbb, 0xddff);
-//   system.memory.write_8(0xddff, EXPECTED_RESULT);
-//   unsigned char data[6] = {0xa1, 0xbb, 0xcc, 0x00, 0x00, 0x00}; // LDA ($ccbb);
+TEST_F(CpuAddressingModeTest, Indirect)
+{
+  // given
+  unsigned char jumpInstructions[3] = {0xa9, EXPECTED_RESULT, 0x00}; // LDA 
+  system.memory.write_16(0xccbb, 0xddff);
+  system.memory.write(0xddff, jumpInstructions, 3);
+  unsigned char data[4] = {0x6c, 0xbb, 0xcc, 0x00}; // JMP ($1234);
 
-//   // when
-//   system.insertDisk(data, 6);
+  // when
+  system.insertDisk(data, 4);
 
-//   // then
-//   EXPECT_EQ(system.cpu.getA(), EXPECTED_RESULT);
-// }
+  // then
+  EXPECT_EQ(system.cpu.getA(), EXPECTED_RESULT);
+}
 
 TEST_F(CpuAddressingModeTest, IndexedIndirect)
 {

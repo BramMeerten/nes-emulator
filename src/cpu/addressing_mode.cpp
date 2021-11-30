@@ -7,7 +7,7 @@ enum AddressingMode
     ABSOLUTE,
     ABSOLUTE_X,
     ABSOLUTE_Y,
-    // INDIRECT,
+    INDIRECT,
     INDEXED_INDIRECT, // Indirect X
     INDIRECT_INDEXED, // Indirect Y
     ACCUMULATOR

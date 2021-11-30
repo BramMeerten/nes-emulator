@@ -131,6 +131,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return eor(IMMEDIATE);
     case 0x4a:
         return lsr(ACCUMULATOR);
+    case 0x4c:
+        return jmp(ABSOLUTE);
     case 0x4d:
         return eor(ABSOLUTE);
     case 0x4e:
@@ -165,6 +167,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(IMMEDIATE);
     case 0x6a:
         return ror(ACCUMULATOR);
+    case 0x6c:
+        return jmp(INDIRECT);
     case 0x6d:
         return adc(ABSOLUTE);
     case 0x6e:
@@ -596,6 +600,14 @@ void Cpu::clv()
     status = status & 0x1011'1111;
 }
 
+// Sets the program counter to the address specified by the operand.
+void Cpu::jmp(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned short address = getAddress(addressingMode);
+    pc = address - 1;
+}
+
 // If the carry flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::bcc()
 {
@@ -945,12 +957,12 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         return getAddress(ABSOLUTE) + x;
     case ABSOLUTE_Y:
         return getAddress(ABSOLUTE) + y;
-    // TODO
-    // case INDIRECT: {
-    //     unsigned short value = system->memory.read_16(pc);
-    //     this->pc = this->pc + 1;
-    //     return system->memory.read_16(value);
-    // }
+    case INDIRECT: 
+    {
+        unsigned short value = system->memory.read_16(pc);
+        this->pc = this->pc + 1;
+        return system->memory.read_16(value);
+    }
     case INDEXED_INDIRECT:
     {
         unsigned char value = (system->memory.read(pc) + x) % 256;
