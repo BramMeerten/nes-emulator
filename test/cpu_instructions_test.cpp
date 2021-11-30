@@ -1117,3 +1117,16 @@ TEST_F(CpuTest, DEX)
   EXPECT_EQ(system.cpu.getStatus(), 0b0000'0000);
   EXPECT_EQ(system.cpu.getX(), 0x13);
 }
+
+TEST_F(CpuTest, DEY)
+{
+  // given
+  unsigned char data[4] = {0xa0, 0x14, 0xca, 0x00}; // LDY #14; DEX;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'0000);
+  EXPECT_EQ(system.cpu.getY(), 0x13);
+}

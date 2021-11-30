@@ -193,6 +193,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return sta(ZERO_PAGE);
     case 0x86:
         return stx(ZERO_PAGE);
+    case 0x88:
+        return dey();
     case 0x8a:
         return txa();
     case 0x8c:
@@ -823,6 +825,13 @@ void Cpu::dex()
 {
     x = x - 1;
     updateZeroAndNegativeFlag(x);
+}
+
+// Subtracts one from the Y register setting the zero and negative flags as appropriate.
+void Cpu::dey()
+{
+    y = y - 1;
+    updateZeroAndNegativeFlag(y);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

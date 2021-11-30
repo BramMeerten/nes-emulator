@@ -84,6 +84,7 @@ private:
     void rti();
     void dec(AddressingMode addressingMode);
     void dex();
+    void dey();
 
     unsigned short getAddress(AddressingMode addressingMode);
 
