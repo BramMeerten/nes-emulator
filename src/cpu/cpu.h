@@ -83,6 +83,7 @@ private:
     void plp();
     void rti();
     void dec(AddressingMode addressingMode);
+    void dex();
 
     unsigned short getAddress(AddressingMode addressingMode);
 

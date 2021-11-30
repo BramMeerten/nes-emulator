@@ -1095,7 +1095,7 @@ TEST_F(CpuTest, TYA)
 TEST_F(CpuTest, DEC)
 {
   // given
-  unsigned char data[7] = {0xa9, 0xfd, 0x85, 0x54, 0xc6, 0x54, 0x00}; // LDA #14; STA $54; DEC $54;
+  unsigned char data[7] = {0xa9, 0xfd, 0x85, 0x54, 0xc6, 0x54, 0x00}; // LDA #fd; STA $54; DEC $54;
 
   // when
   system.insertDisk(data, 7);
@@ -1103,4 +1103,17 @@ TEST_F(CpuTest, DEC)
   // then
   EXPECT_EQ(system.memory.read(0x54), 0xfc); 
   EXPECT_EQ(system.cpu.getStatus(), 0b1000'0000);
+}
+
+TEST_F(CpuTest, DEX)
+{
+  // given
+  unsigned char data[4] = {0xa2, 0x14, 0xca, 0x00}; // LDX #14; DEX;
+
+  // when
+  system.insertDisk(data, 4);
+
+  // then
+  EXPECT_EQ(system.cpu.getStatus(), 0b0000'0000);
+  EXPECT_EQ(system.cpu.getX(), 0x13);
 }

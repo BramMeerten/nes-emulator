@@ -277,6 +277,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return dec(ZERO_PAGE);
     case 0xc9:
         return cmp(IMMEDIATE);
+    case 0xca:
+        return dex();
     case 0xcc:
         return cpy(ABSOLUTE);
     case 0xcd:
@@ -814,6 +816,13 @@ void Cpu::dec(AddressingMode addressingMode)
     unsigned char mem = system->memory.read(addr);
     system->memory.write_8(addr, mem - 1);
     updateZeroAndNegativeFlag(mem - 1);
+}
+
+// Subtracts one from the X register setting the zero and negative flags as appropriate.
+void Cpu::dex()
+{
+    x = x - 1;
+    updateZeroAndNegativeFlag(x);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
