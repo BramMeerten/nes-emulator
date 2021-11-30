@@ -311,6 +311,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return cpx(ZERO_PAGE);
     case 0xe5:
         return sbc(ZERO_PAGE);
+    case 0xe6:
+        return inc(ZERO_PAGE);
     case 0xe8:
         return inx();
     case 0xe9:
@@ -321,18 +323,24 @@ void Cpu::execOpCode(unsigned char opCode)
         return cpx(ABSOLUTE);
     case 0xed:
         return sbc(ABSOLUTE);
+    case 0xee:
+        return inc(ABSOLUTE);
     case 0xf0:
         return beq();
     case 0xf1:
         return sbc(INDIRECT_INDEXED);
     case 0xf5:
         return sbc(ZERO_PAGE_X);
+    case 0xf6:
+        return inc(ZERO_PAGE_X);
     case 0xf8:
         return sed();
     case 0xf9:
         return sbc(ABSOLUTE_Y);
     case 0xfd:
         return sbc(ABSOLUTE_X);
+    case 0xfe:
+        return inc(ABSOLUTE_X);
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         exit(1);
@@ -717,13 +725,6 @@ void Cpu::tya()
     updateZeroAndNegativeFlag(a);
 }
 
-// Adds one to the X register setting the zero and negative flags as appropriate.
-void Cpu::inx()
-{
-    x += 1;
-    updateZeroAndNegativeFlag(x);
-}
-
 // This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
 void Cpu::cmp(AddressingMode addressingMode)
 {
@@ -832,6 +833,23 @@ void Cpu::dey()
 {
     y = y - 1;
     updateZeroAndNegativeFlag(y);
+}
+
+// Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
+void Cpu::inc(AddressingMode addressingMode)
+{
+    pc++;
+    unsigned short addr = getAddress(addressingMode);
+    unsigned char mem = system->memory.read(addr);
+    system->memory.write_8(addr, mem + 1);
+    updateZeroAndNegativeFlag(mem + 1);
+}
+
+// Adds one to the X register setting the zero and negative flags as appropriate.
+void Cpu::inx()
+{
+    x += 1;
+    updateZeroAndNegativeFlag(x);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

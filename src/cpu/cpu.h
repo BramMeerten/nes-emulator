@@ -70,7 +70,6 @@ private:
     void txa();
     void txs();
     void tya();
-    void inx();
     void cmp(AddressingMode addressingMode);
     void cpx(AddressingMode addressingMode);
     void cpy(AddressingMode addressingMode);
@@ -85,6 +84,8 @@ private:
     void dec(AddressingMode addressingMode);
     void dex();
     void dey();
+    void inc(AddressingMode addressingMode);
+    void inx();
 
     unsigned short getAddress(AddressingMode addressingMode);
 
