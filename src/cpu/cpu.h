@@ -33,6 +33,7 @@ private:
     unsigned short pullStack_16();
     void print();
 
+    void brk();
     void nop();
     void adc(AddressingMode addressingMode);
     void sbc(AddressingMode addressingMode);
@@ -98,12 +99,12 @@ private:
     unsigned char x;
     unsigned char y;
 
-    // NVss DIZC
+    // NVsB DIZC
     // ----------
     // N: negative
     // V: Overflow
     // s
-    // s
+    // B: Break
     // D: Decimal
     // I: Interrupt Disable
     // Z: Zero

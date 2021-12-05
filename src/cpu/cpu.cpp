@@ -5,6 +5,8 @@
 #include "cpu.h"
 #include "../system.h"
 
+#define STOP_ON_BRK
+
 Cpu::Cpu(System *system)
 {
     resetState();
@@ -33,10 +35,13 @@ void Cpu::run()
     while (true)
     {
         unsigned char opCode = system->memory.read(pc);
-        if (opCode == 0x00)
-            break;
-        execOpCode(opCode);
+        
+        #ifdef STOP_ON_BRK
+            if (opCode == 0x00) break;
+        #endif
+    
         pc++;
+        execOpCode(opCode);
     }
 
     print();
@@ -44,9 +49,10 @@ void Cpu::run()
 
 void Cpu::execOpCode(unsigned char opCode)
 {
-    // TODO BRK not implemented
     switch (opCode)
     {
+    case 0x00:
+        return brk();
     case 0x01:
         return ora(INDEXED_INDIRECT);
     case 0x05:
@@ -351,6 +357,15 @@ void Cpu::execOpCode(unsigned char opCode)
     }
 }
 
+// The BRK instruction forces the generation of an interrupt request. The program counter and processor status are pushed on the stack then the IRQ interrupt vector at $FFFE/F is loaded into the PC and the break flag in the status set to one.
+void Cpu::brk()
+{
+    pushStack_16(pc);
+    pushStack(status);
+    pc = system->memory.read_16(0xfffe);
+    status = status | 0b0001'0000;
+}
+
 // The NOP instruction causes no changes to the processor other than the normal incrementing of the program counter to the next instruction.
 void Cpu::nop()
 {
@@ -359,7 +374,6 @@ void Cpu::nop()
 // Adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
 void Cpu::adc(AddressingMode addressingMode)
 {
-    pc++;
     unsigned char value = system->memory.read(getAddress(addressingMode));
     unsigned short result = a + value + getCarry();
     updateZeroAndNegativeFlag(result);
@@ -382,7 +396,6 @@ void Cpu::adc(AddressingMode addressingMode)
 // Subtracts the contents of a memory location to the accumulator together with the not of the carry bit. If overflow occurs the carry bit is clear, this enables multiple byte subtraction to be performed.
 void Cpu::sbc(AddressingMode addressingMode)
 {
-    pc++;
     unsigned char value = system->memory.read(getAddress(addressingMode));
     unsigned short result = a - (value + (getCarry() ? 0 : 1));
     updateZeroAndNegativeFlag(result);
@@ -428,7 +441,6 @@ void Cpu::sei()
 // Stores the contents of the accumulator into memory.
 void Cpu::sta(AddressingMode addressingMode)
 {
-    pc++;
     unsigned short address = getAddress(addressingMode);
     system->memory.write_8(address, a);
 }
@@ -436,7 +448,6 @@ void Cpu::sta(AddressingMode addressingMode)
 // Stores the contents of the X register into memory.
 void Cpu::stx(AddressingMode addressingMode)
 {
-    pc++;
     unsigned short address = getAddress(addressingMode);
     system->memory.write_8(address, x);
 }
@@ -444,7 +455,6 @@ void Cpu::stx(AddressingMode addressingMode)
 // Stores the contents of the Y register into memory.
 void Cpu::sty(AddressingMode addressingMode)
 {
-    pc++;
     unsigned short address = getAddress(addressingMode);
     system->memory.write_8(address, y);
 }
@@ -458,7 +468,6 @@ void Cpu::cli()
 // A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
 void Cpu::andOp(AddressingMode addressingMode)
 {
-    pc++;
     a = a & system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(a);
 }
@@ -466,7 +475,6 @@ void Cpu::andOp(AddressingMode addressingMode)
 // An inclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
 void Cpu::ora(AddressingMode addressingMode)
 {
-    pc++;
     a = a | system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(a);
 }
@@ -474,7 +482,6 @@ void Cpu::ora(AddressingMode addressingMode)
 // An exclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
 void Cpu::eor(AddressingMode addressingMode)
 {
-    pc++;
     a = a ^ system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(a);
 }
@@ -483,7 +490,6 @@ void Cpu::eor(AddressingMode addressingMode)
 // Bits 7 and 6 of the value from memory are copied into the N and V flags.
 void Cpu::bit(AddressingMode addressingMode)
 {
-    pc++;
     unsigned char mem = system->memory.read(getAddress(addressingMode));
     unsigned char result = a & mem;
     updateZeroFlag(result);
@@ -500,9 +506,9 @@ void Cpu::asl(AddressingMode addressingMode)
         a = a << 1;
         updateZeroAndNegativeFlag(a);
     } else {
-        pc++;
-        originalValue = system->memory.read(getAddress(addressingMode));
-        system->memory.write_8(getAddress(addressingMode), originalValue << 1);
+        unsigned short addr = getAddress(addressingMode);
+        originalValue = system->memory.read(addr);
+        system->memory.write_8(addr, originalValue << 1);
         updateZeroAndNegativeFlag(originalValue << 1);
     }
 
@@ -518,9 +524,9 @@ void Cpu::lsr(AddressingMode addressingMode)
         a = a >> 1;
         updateZeroAndNegativeFlag(a);
     } else {
-        pc++;
-        originalValue = system->memory.read(getAddress(addressingMode));
-        system->memory.write_8(getAddress(addressingMode), originalValue >> 1);
+        unsigned short addr = getAddress(addressingMode);
+        originalValue = system->memory.read(addr);
+        system->memory.write_8(addr, originalValue >> 1);
         updateZeroAndNegativeFlag(originalValue >> 1);
     }
 
@@ -536,7 +542,6 @@ void Cpu::rol(AddressingMode addressingMode)
         a = (a << 1) | (status & 0x01);
         updateZeroAndNegativeFlag(a);
     } else {
-        pc++;
         unsigned short address = getAddress(addressingMode);
         originalValue = system->memory.read(address);
         system->memory.write_8(address, (originalValue << 1) | (status & 0x01));
@@ -556,7 +561,6 @@ void Cpu::ror(AddressingMode addressingMode)
         a = (a >> 1) | ((status & 0x01) << 7);
         updateZeroAndNegativeFlag(a);
     } else {
-        pc++;
         unsigned short address = getAddress(addressingMode);
         originalValue = system->memory.read(address);
         system->memory.write_8(address, (originalValue >> 1) | ((status & 0x01) << 7));
@@ -570,16 +574,15 @@ void Cpu::ror(AddressingMode addressingMode)
 // The JSR instruction pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
 void Cpu::jsr()
 {
-    pc++;
-    unsigned short address = getAddress(ABSOLUTE) - 1;
-    pushStack_16(pc + 1);
+    unsigned short address = getAddress(ABSOLUTE);
+    pushStack_16(pc);
     pc = address;
 }
 
 // The RTS instruction is used at the end of a subroutine to return to the calling routine. It pulls the program counter (minus one) from the stack.
 void Cpu::rts()
 {
-    pc = pullStack_16() - 1;
+    pc = pullStack_16();
 }
 
 // Set the carry flag to zero.
@@ -603,79 +606,77 @@ void Cpu::clv()
 // Sets the program counter to the address specified by the operand.
 void Cpu::jmp(AddressingMode addressingMode)
 {
-    pc++;
     unsigned short address = getAddress(addressingMode);
-    pc = address - 1;
+    pc = address;
 }
 
 // If the carry flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::bcc()
 {
-    pc++;
     if (getCarry() == 0)
         pc += system->memory.read_signed(pc);
+    pc++;
 }
 
 // If the carry flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::bcs()
 {
-    pc++;
     if (getCarry() == 1)
         pc += system->memory.read_signed(pc);
+    pc++;
 }
 
 // If the zero flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::beq()
 {
-    pc++;
     if (getZero() == 1)
         pc += system->memory.read_signed(pc);
+    pc++;
 }
 
 // If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::bne()
 {
-    pc++;
     if (getZero() == 0)
         pc += system->memory.read_signed(pc);
+    pc++;
 }
 
 // If the negative flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::bmi()
 {
-    pc++;
     if (getNegative() == 1)
         pc += system->memory.read_signed(pc);
+    pc++;
 }
 
 // If the negative flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::bpl()
 {
-    pc++;
     if (getNegative() == 0)
         pc += system->memory.read_signed(pc);
+    pc++;
 }
 
 // If the overflow flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::bvc()
 {
-    pc++;
     if (getOverflow() == 0)
         pc += system->memory.read_signed(pc);
+    pc++;
 }
 
 // If the overflow flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 void Cpu::bvs()
 {
-    pc++;
     if (getOverflow() == 1)
         pc += system->memory.read_signed(pc);
+    pc++;
 }
 
 // Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
 void Cpu::lda(AddressingMode addressingMode)
 {
-    pc++;
     a = system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(a);
 }
@@ -683,7 +684,6 @@ void Cpu::lda(AddressingMode addressingMode)
 // Loads a byte of memory into the X register setting the zero and negative flags as appropriate.
 void Cpu::ldx(AddressingMode addressingMode)
 {
-    pc++;
     x = system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(x);
 }
@@ -691,7 +691,6 @@ void Cpu::ldx(AddressingMode addressingMode)
 // Loads a byte of memory into the Y register setting the zero and negative flags as appropriate.
 void Cpu::ldy(AddressingMode addressingMode)
 {
-    pc++;
     y = system->memory.read(getAddress(addressingMode));
     updateZeroAndNegativeFlag(y);
 }
@@ -740,7 +739,6 @@ void Cpu::tya()
 // This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
 void Cpu::cmp(AddressingMode addressingMode)
 {
-    pc++;
     unsigned char mem = system->memory.read(getAddress(addressingMode));
     unsigned char result = a - mem;
 
@@ -758,7 +756,6 @@ void Cpu::cmp(AddressingMode addressingMode)
 // This instruction compares the contents of the X register with another memory held value and sets the zero and carry flags as appropriate.
 void Cpu::cpx(AddressingMode addressingMode)
 {
-    pc++;
     unsigned char mem = system->memory.read(getAddress(addressingMode));
     unsigned char result = x - mem;
 
@@ -776,7 +773,6 @@ void Cpu::cpx(AddressingMode addressingMode)
 // This instruction compares the contents of the Y register with another memory held value and sets the zero and carry flags as appropriate.
 void Cpu::cpy(AddressingMode addressingMode)
 {
-    pc++;
     unsigned char mem = system->memory.read(getAddress(addressingMode));
     unsigned char result = y - mem;
 
@@ -826,7 +822,6 @@ void Cpu::rti()
 // Subtracts one from the value held at a specified memory location setting the zero and negative flags as appropriate.
 void Cpu::dec(AddressingMode addressingMode)
 {
-    pc++;
     unsigned short addr = getAddress(addressingMode);
     unsigned char mem = system->memory.read(addr);
     system->memory.write_8(addr, mem - 1);
@@ -850,7 +845,6 @@ void Cpu::dey()
 // Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
 void Cpu::inc(AddressingMode addressingMode)
 {
-    pc++;
     unsigned short addr = getAddress(addressingMode);
     unsigned char mem = system->memory.read(addr);
     system->memory.write_8(addr, mem + 1);
@@ -937,46 +931,63 @@ unsigned short Cpu::pullStack_16()
 
 unsigned short Cpu::getAddress(AddressingMode addressingMode)
 {
+    unsigned short out;
+    int increment = 1;
+
     switch (addressingMode)
     {
     case IMMEDIATE:
-        return pc;
+        out = pc;
+        break;
     case ZERO_PAGE:
-        return system->memory.read(pc);
+        out = system->memory.read(pc);
+        break;
     case ZERO_PAGE_X:
-        return (getAddress(ZERO_PAGE) + x) % 256;
+        out = (system->memory.read(pc) + x) % 256;
+        break;
     case ZERO_PAGE_Y:
-        return (getAddress(ZERO_PAGE) + y) % 256;
+        out = (system->memory.read(pc) + y) % 256;
+        break;
     case ABSOLUTE:
     {
-        unsigned short value = system->memory.read_16(pc);
-        this->pc = this->pc + 1;
-        return value;
+        out = system->memory.read_16(pc);
+        increment = 2;
+        break;
     }
     case ABSOLUTE_X:
-        return getAddress(ABSOLUTE) + x;
+        out = system->memory.read_16(pc) + x;
+        increment = 2;
+        break;
     case ABSOLUTE_Y:
-        return getAddress(ABSOLUTE) + y;
+        out = system->memory.read_16(pc) + y;
+        increment = 2;
+        break;
     case INDIRECT: 
     {
-        unsigned short value = system->memory.read_16(pc);
-        this->pc = this->pc + 1;
-        return system->memory.read_16(value);
+        unsigned short addr = system->memory.read_16(pc);
+        out = system->memory.read_16(addr);
+        increment = 2;
+        break;
     }
     case INDEXED_INDIRECT:
     {
-        unsigned char value = (system->memory.read(pc) + x) % 256;
-        return system->memory.read_16(value);
+        unsigned char addr = (system->memory.read(pc) + x) % 256;
+        out = system->memory.read_16(addr);
+        break;
     }
     case INDIRECT_INDEXED:
     {
-        unsigned char value = system->memory.read(pc);
-        return system->memory.read_16(value) + y;
+        unsigned char addr = system->memory.read(pc);
+        out = system->memory.read_16(addr) + y;
+        break;
     }
     default:
         std::cout << "Unexpected addressing mode " << addressingMode << std::endl;
         exit(1);
     }
+
+    pc += increment;
+    return out;
 }
 
 void Cpu::print()

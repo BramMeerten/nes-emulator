@@ -944,7 +944,7 @@ TEST_F(CpuTest, RTI)
   system.insertDisk(data, 10);
 
   // then
-  EXPECT_EQ(system.cpu.getPC(), 0x9013);
+  EXPECT_EQ(system.cpu.getPC(), 0x9012);
   EXPECT_EQ(system.cpu.getStatus(), 0x32);
 }
 
