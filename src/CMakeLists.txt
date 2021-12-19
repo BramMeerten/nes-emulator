@@ -1,7 +1,8 @@
 add_library(NES_LIB
     cpu/cpu.h cpu/cpu.cpp
-    memory.h memory.cpp
-    system.h
+    cpu/addressing_mode.cpp
+    bus.h bus.cpp
+    rom.cpp
 )
 
 add_executable(NES main.cpp)
