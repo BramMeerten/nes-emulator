@@ -1,11 +1,31 @@
 #include "gtest/gtest.h"
 
-#include "system.h"
+#include "bus.h"
+#include "cpu/cpu.h"
 
 class CpuAdcTwosComplementTest : public ::testing::Test
 {
+public:
+  CpuAdcTwosComplementTest() {
+    bus = new Bus();
+    cpu = new Cpu(bus);
+  }
+
+  ~CpuAdcTwosComplementTest() 
+  {
+    delete cpu;
+    delete bus;
+  }
 protected:
-  System system;
+  Bus *bus;
+  Cpu *cpu;
+
+  void readData(unsigned char *data, int length)
+  {
+    bus->readData(data, length);
+    bus->write_16(bus->RESET_VECTOR_ADDR, 0x8000);
+    cpu->run();
+  }
 };
 
 unsigned char overflow(unsigned char status) {
@@ -23,12 +43,12 @@ TEST_F(CpuAdcTwosComplementTest, One)
   unsigned char data[5] = {0xa9, 0x01, 0x69, 0x01, 0x00};
 
   // when
-  system.insertDisk(data, 5);
+  readData(data, 5);
 
   // then
-  EXPECT_EQ(system.cpu.getA(), 0x02);
-  EXPECT_EQ(carry(system.cpu.getStatus()), 0);
-  EXPECT_EQ(overflow(system.cpu.getStatus()), 0);
+  EXPECT_EQ(cpu->getA(), 0x02);
+  EXPECT_EQ(carry(cpu->getStatus()), 0);
+  EXPECT_EQ(overflow(cpu->getStatus()), 0);
 }
 
 TEST_F(CpuAdcTwosComplementTest, Two)
@@ -38,12 +58,12 @@ TEST_F(CpuAdcTwosComplementTest, Two)
   unsigned char data[5] = {0xa9, 0x01, 0x69, 0xff, 0x00};
 
   // when
-  system.insertDisk(data, 5);
+  readData(data, 5);
 
   // then
-  EXPECT_EQ(system.cpu.getA(), 0);
-  EXPECT_EQ(carry(system.cpu.getStatus()), 1);
-  EXPECT_EQ(overflow(system.cpu.getStatus()), 0);
+  EXPECT_EQ(cpu->getA(), 0);
+  EXPECT_EQ(carry(cpu->getStatus()), 1);
+  EXPECT_EQ(overflow(cpu->getStatus()), 0);
 }
 
 TEST_F(CpuAdcTwosComplementTest, Three)
@@ -53,12 +73,12 @@ TEST_F(CpuAdcTwosComplementTest, Three)
   unsigned char data[5] = {0xa9, 0x7f, 0x69, 0x01, 0x00};
 
   // when
-  system.insertDisk(data, 5);
+  readData(data, 5);
 
   // then
-  EXPECT_EQ(system.cpu.getA(), 128); // 128 (0x80) is -128 in two's complement -> overflow
-  EXPECT_EQ(carry(system.cpu.getStatus()), 0);
-  EXPECT_EQ(overflow(system.cpu.getStatus()), 1);
+  EXPECT_EQ(cpu->getA(), 128); // 128 (0x80) is -128 in two's complement -> overflow
+  EXPECT_EQ(carry(cpu->getStatus()), 0);
+  EXPECT_EQ(overflow(cpu->getStatus()), 1);
 }
 
 TEST_F(CpuAdcTwosComplementTest, Four)
@@ -68,12 +88,12 @@ TEST_F(CpuAdcTwosComplementTest, Four)
   unsigned char data[5] = {0xa9, 0x80, 0x69, 0xff, 0x00};
 
   // when
-  system.insertDisk(data, 5);
+  readData(data, 5);
 
   // then
-  EXPECT_EQ(system.cpu.getA(), 127); // +127 instead of -129 -> overflow
-  EXPECT_EQ(overflow(system.cpu.getStatus()), 1);
-  EXPECT_EQ(carry(system.cpu.getStatus()), 1);
+  EXPECT_EQ(cpu->getA(), 127); // +127 instead of -129 -> overflow
+  EXPECT_EQ(overflow(cpu->getStatus()), 1);
+  EXPECT_EQ(carry(cpu->getStatus()), 1);
 }
 
 TEST_F(CpuAdcTwosComplementTest, Five)
@@ -84,10 +104,10 @@ TEST_F(CpuAdcTwosComplementTest, Five)
   unsigned char data[6] = {0x38, 0xa9, 0x3f, 0x69, 0x40, 0x00};
 
   // when
-  system.insertDisk(data, 6);
+  readData(data, 6);
 
   // then
-  EXPECT_EQ(system.cpu.getA(), 128); // 128 (0x80) is -128 in two's complement -> overflow
-  EXPECT_EQ(carry(system.cpu.getStatus()), 0);
-  EXPECT_EQ(overflow(system.cpu.getStatus()), 1);
+  EXPECT_EQ(cpu->getA(), 128); // 128 (0x80) is -128 in two's complement -> overflow
+  EXPECT_EQ(carry(cpu->getStatus()), 0);
+  EXPECT_EQ(overflow(cpu->getStatus()), 1);
 }

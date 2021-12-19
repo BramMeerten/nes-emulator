@@ -1,14 +1,14 @@
 #include "gtest/gtest.h"
 
-#include "memory.h"
+#include "bus.h"
 
-class MemoryTest : public ::testing::Test
+class BusTest : public ::testing::Test
 {
 protected:
-  Memory memory;
+  Bus memory;
 };
 
-TEST_F(MemoryTest, MemoryReadsTwoByteValue)
+TEST_F(BusTest, BusReadsTwoByteValue)
 {
   // given
   unsigned char data[2] = {0x34, 0x12};
@@ -21,7 +21,7 @@ TEST_F(MemoryTest, MemoryReadsTwoByteValue)
   EXPECT_EQ(value, 0x1234);
 }
 
-TEST_F(MemoryTest, MemoryWritesTwoByteValue)
+TEST_F(BusTest, BusWritesTwoByteValue)
 {
   // given
   unsigned short data = 0x1234;
