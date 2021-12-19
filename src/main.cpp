@@ -3,16 +3,18 @@
 #include <stdlib.h>
 
 #include "cpu/cpu.h"
-#include "memory.h"
-#include "system.h"
+#include "bus.h"
+#include "bus.h"
+#include "rom.cpp"
 
 using std::string;
 
 int main(int, char**) {
-    System system;
+    Bus bus;
+    Rom rom("../../test/roms/01.nes");
+    bus.insertDisk(&rom);
+    bus.write_16(bus.RESET_VECTOR_ADDR, 0xc000);
 
-    unsigned char data[5] = {0xa9, 0xc0, 0xaa, 0xe8, 0x00};
-    system.insertDisk(data, 5);
-
-    // loadRom("/Users/brammeerten/src/nes/test/roms/01-implied.nes");
+    Cpu cpu(&bus);
+    cpu.run();
 }

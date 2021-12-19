@@ -1,14 +1,15 @@
 #pragma once
 
 #include "addressing_mode.cpp"
+#include "execution_data.h"
 
-class System;
+class Bus;
 
 class Cpu
 {
 public:
-    Cpu(System *system);
-    void resetInterrupt();
+    Cpu(Bus *bus) : execData(NULL), bus(bus) { }
+
     void run();
 
     int getPC() { return pc; };
@@ -20,6 +21,7 @@ public:
     unsigned char getZero() { return (status & 0b0000'0010) >> 1; }
 
 private:
+    void resetInterrupt();
     void resetState();
     void execOpCode(unsigned char opCode);
     void updateZeroAndNegativeFlag(unsigned char result);
@@ -32,6 +34,7 @@ private:
     unsigned char pullStack();
     unsigned short pullStack_16();
     void print();
+    void logLine();
 
     void brk();
     void nop();
@@ -91,7 +94,8 @@ private:
 
     unsigned short getAddress(AddressingMode addressingMode);
 
-    System *system;
+    Bus *bus;
+    ExecutionData *execData;
 
     unsigned short pc;
     unsigned char sp;
