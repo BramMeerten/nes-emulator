@@ -64,7 +64,7 @@ void Cpu::run()
         delete execData;
 
         #ifdef NES_LOG_TEST
-            if (i++ > 200)
+            if (i++ > 900)
                 exit(0);
         #endif
     }
@@ -432,6 +432,9 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0xc6:
         execData->opCodeName = "DEC";
         return dec(ZERO_PAGE);
+    case 0xc8:
+        execData->opCodeName = "INY";
+        return iny();
     case 0xc9:
         execData->opCodeName = "CMP";
         return cmp(IMMEDIATE);
@@ -585,11 +588,11 @@ void Cpu::sbc(AddressingMode addressingMode)
 
     // Overflow flag. Set if result if two's complement is outside -128, +127 range.
     // This can only happen if:
-    // - Two positive numbers are added, and the result is a negative number.
-    // - Two negative numbers are added, and the result is a positive number.
-    // Simplification: Sign of both inputs is different from the sign of the result.
-    // Overflow occurs if (M^result) & (N^result) & 0b1000'0000 is nonzero.
-    if ((a ^ result) & (value ^ result) & 0b1000'0000)
+    // - Positive minus negative, and the result is a negative number.
+    // - Negative minus positive, and the result is a positive number.
+    // Simplification: Sign of first input and result are different. Sign of second input and result are same.
+    // Overflow occurs if (M^result) & (~N^result) & 0b1000'0000 is nonzero.
+    if ((a ^ result) & ((~value) ^ result) & 0b1000'0000)
         status = status | 0b0100'0000;
     else
         status = status & 0b1011'1111;
@@ -997,7 +1000,7 @@ void Cpu::pla()
 void Cpu::plp()
 {
     #ifdef NES_LOG_TEST
-        status = pullStack() & 0b1110'1111; // Not clearing 5 because of test log. Doesn't matter because register doesn't exist.
+        status = (pullStack() & 0b1110'1111) | 0b0010'0000; // Not clearing 5 because of test log. Doesn't matter because register doesn't exist.
     #else
         status = pullStack() & 0b1100'1111; // bit 5 and 4 do not exist and should be ignored.
     #endif
@@ -1053,6 +1056,13 @@ void Cpu::inx()
 {
     x += 1;
     updateZeroAndNegativeFlag(x);
+}
+
+// Adds one to the Y register setting the zero and negative flags as appropriate.
+void Cpu::iny()
+{
+    y += 1;
+    updateZeroAndNegativeFlag(y);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

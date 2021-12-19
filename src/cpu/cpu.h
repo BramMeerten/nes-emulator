@@ -91,6 +91,7 @@ private:
     void dey();
     void inc(AddressingMode addressingMode);
     void inx();
+    void iny();
 
     unsigned short getAddress(AddressingMode addressingMode);
 

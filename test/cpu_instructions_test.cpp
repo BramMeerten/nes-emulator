@@ -106,6 +106,19 @@ TEST_F(CpuTest, InxIncreasesTheXRegister)
   EXPECT_EQ(cpu->getStatus(), 0b1000'0000);
 }
 
+TEST_F(CpuTest, InxIncreasesTheYRegister)
+{
+  // given
+  unsigned char data[5] = {0xa0, 0x80, 0xc8, 0x00}; // LDY #80; INY
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(cpu->getY(), 0x81);
+  EXPECT_EQ(cpu->getStatus(), 0b1000'0000);
+}
+
 TEST_F(CpuTest, LdxSetsRegisterX)
 {
   // given
@@ -1004,7 +1017,7 @@ TEST_F(CpuTest, SBC_set_carry)
   readData(data, 5);
 
   // then
-  EXPECT_EQ(cpu->getA(), 0x20); // 33 - (12 + ~carry)
+  EXPECT_EQ(cpu->getA(), 0x20);
   EXPECT_EQ(cpu->getStatus(), 0b0000'0001); // carry = 1
 }
 
@@ -1017,8 +1030,8 @@ TEST_F(CpuTest, SBC_clear_carry)
   readData(data, 5);
 
   // then
-  EXPECT_EQ(cpu->getA(), 0xde); // 0x12 - (0x33 + ~carry) = -0x22 = 0xde (overflow)
-  EXPECT_EQ(cpu->getStatus(), 0b1100'0000); // overflow = 1, carry = 0
+  EXPECT_EQ(cpu->getA(), 0xde);
+  EXPECT_EQ(cpu->getStatus(), 0b1000'0000); // overflow = 0, carry = 0
 }
 
 TEST_F(CpuTest, SBC_carry_is_set)
@@ -1030,7 +1043,7 @@ TEST_F(CpuTest, SBC_carry_is_set)
   readData(data, 6);
 
   // then
-  EXPECT_EQ(cpu->getA(), 0x21); // 33 - (12 + ~carry)
+  EXPECT_EQ(cpu->getA(), 0x21);
   EXPECT_EQ(cpu->getStatus(), 0b0000'0001); // carry = 1
 }
 

@@ -3,3 +3,4 @@ settings.json
 c_cpp_properties.json
 test/Testing/
 Testing/
+test/roms/out
