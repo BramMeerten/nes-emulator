@@ -562,6 +562,7 @@ void Cpu::execOpCode(unsigned char opCode)
         execData->opCodeName = "*NOP";
         return nop(IMPLIED);
     case 0x80: case 0x82: case 0x89: case 0xc2: case 0xe2:
+    case 0x8b: // ANE
         execData->opCodeName = "*NOP";
         return nop(IMMEDIATE);
     case 0x04: case 0x44: case 0x64:
@@ -717,6 +718,9 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0x0b: case 0x2b:
         execData->opCodeName = "*ANC";
         return anc(IMMEDIATE);
+    case 0x6b:
+        execData->opCodeName = "*ARR";
+        return arr(IMMEDIATE);
 
     default:
         if (opCode == 0x9f || opCode == 0x93) {
@@ -1380,6 +1384,32 @@ void Cpu::anc(AddressingMode addressingMode)
         status = status | 0b0000'0001;
     else
         status = status & 0b1111'1110;
+}
+
+// AND byte with accumulator, then rotate one bit right in accu-mulator  (AND oper + ROR)
+// and check bit 5 and 6:
+// - If both bits are 1: set C, clear V.
+// - If both bits are 0: clear C and V.
+// - If only bit 5 is 1: set V, clear C.
+// - If only bit 6 is 1: set C and V.
+void Cpu::arr(AddressingMode addressingMode)
+{
+    andOp(addressingMode);
+    ror(ACCUMULATOR);
+
+    unsigned char bit5 = (a & 0b0010'0000) >> 5;
+    unsigned char bit6 = (a & 0b0100'0000) >> 6;
+    
+    if (bit6 == 1)
+        status = status | 0b0000'0001; // set carry
+    else
+        status = status & 0b1111'1110; // clear carry
+    
+    if ((bit5 ^ bit6) == 1)
+        status = status | 0b0100'0000; // set overflow
+    else
+        status = status & 0b1011'1111; // clear overflow
+
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

@@ -104,6 +104,7 @@ private:
     void dcp(AddressingMode AddressingMode);
     void alr(AddressingMode AddressingMode);
     void anc(AddressingMode AddressingMode);
+    void arr(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

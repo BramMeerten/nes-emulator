@@ -1353,3 +1353,55 @@ TEST_F(CpuTest, ANC_CLEAR_A)
   EXPECT_EQ(cpu->getA(), 0b0000'0100);
   EXPECT_EQ(cpu->getStatus(), 0b0000'0000); // carry = 0
 }
+
+TEST_F(CpuTest, ARR_RESULT_00)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0b0110'0100, 0x6b, 0b1010'1110, 0x00}; // LDA #c4; ARR #ae;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0b0001'0010);
+  EXPECT_EQ(cpu->getStatus(), 0b0000'0000); // c=0, v=0
+}
+
+TEST_F(CpuTest, ARR_RESULT_01)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0b0110'0100, 0x6b, 0b1110'1110, 0x00}; // LDA #c4; ARR #ae;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0b0011'0010);
+  EXPECT_EQ(cpu->getStatus(), 0b0100'0000); // c=0, v=1
+}
+
+TEST_F(CpuTest, ARR_RESULT_10)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0b1110'0100, 0x6b, 0b1010'1110, 0x00}; // LDA #c4; ARR #ae;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0b0101'0010);
+  EXPECT_EQ(cpu->getStatus(), 0b0100'0001); // c=1, v=1
+}
+
+TEST_F(CpuTest, ARR_RESULT_11)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0b1110'0100, 0x6b, 0b1110'1110, 0x00}; // LDA #c4; ARR #ae;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0b0111'0010);
+  EXPECT_EQ(cpu->getStatus(), 0b0000'0001); // c=1, v=0
+}
