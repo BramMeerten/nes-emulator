@@ -39,8 +39,9 @@ private:
     void brk();
     void nop(AddressingMode addressingMode);
     void adc(AddressingMode addressingMode);
-    void adc_value(unsigned char);
+    void adc_value(unsigned char value);
     void sbc(AddressingMode addressingMode);
+    void sbc_value(unsigned char value);
     void sec();
     void sed();
     void sei();
@@ -91,7 +92,7 @@ private:
     unsigned char dec(AddressingMode addressingMode);
     void dex();
     void dey();
-    void inc(AddressingMode addressingMode);
+    unsigned char inc(AddressingMode addressingMode);
     void inx();
     void iny();
 
@@ -105,6 +106,7 @@ private:
     void alr(AddressingMode AddressingMode);
     void anc(AddressingMode AddressingMode);
     void arr(AddressingMode AddressingMode);
+    void isc(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

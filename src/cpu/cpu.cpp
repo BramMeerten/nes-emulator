@@ -512,7 +512,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return sbc(ZERO_PAGE);
     case 0xe6:
         execData->opCodeName = "INC";
-        return inc(ZERO_PAGE);
+        inc(ZERO_PAGE);
+        return;
     case 0xe8:
         execData->opCodeName = "INX";
         return inx();
@@ -530,7 +531,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return sbc(ABSOLUTE);
     case 0xee:
         execData->opCodeName = "INC";
-        return inc(ABSOLUTE);
+        inc(ABSOLUTE);
+        return;
     case 0xf0:
         execData->opCodeName = "BEQ";
         return beq();
@@ -542,7 +544,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return sbc(ZERO_PAGE_X);
     case 0xf6:
         execData->opCodeName = "INC";
-        return inc(ZERO_PAGE_X);
+        inc(ZERO_PAGE_X);
+        return;
     case 0xf8:
         execData->opCodeName = "SED";
         return sed();
@@ -554,7 +557,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return sbc(ABSOLUTE_X);
     case 0xfe:
         execData->opCodeName = "INC";
-        return inc(ABSOLUTE_X);
+        inc(ABSOLUTE_X);
+        return;
 
     // Illegal opcodes
     case 0x1a: case 0x3a: case 0x5a: case 0x7a: case 0xda: case 0xfa: // NOP
@@ -721,6 +725,27 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0x6b:
         execData->opCodeName = "*ARR";
         return arr(IMMEDIATE);
+    case 0xe7:
+        execData->opCodeName = "*ISC";
+        return isc(ZERO_PAGE);
+    case 0xf7:
+        execData->opCodeName = "*ISC";
+        return isc(ZERO_PAGE_X);
+    case 0xef:
+        execData->opCodeName = "*ISC";
+        return isc(ABSOLUTE);
+    case 0xff:
+        execData->opCodeName = "*ISC";
+        return isc(ABSOLUTE_X);
+    case 0xfb:
+        execData->opCodeName = "*ISC";
+        return isc(ABSOLUTE_Y);
+    case 0xe3:
+        execData->opCodeName = "*ISC";
+        return isc(INDEXED_INDIRECT);
+    case 0xf3:
+        execData->opCodeName = "*ISC";
+        return isc(INDIRECT_INDEXED);
 
     default:
         if (opCode == 0x9f || opCode == 0x93) {
@@ -776,7 +801,11 @@ void Cpu::adc_value(unsigned char value)
 // Subtracts the contents of a memory location to the accumulator together with the not of the carry bit. If overflow occurs the carry bit is clear, this enables multiple byte subtraction to be performed.
 void Cpu::sbc(AddressingMode addressingMode)
 {
-    unsigned char value = bus->read(getAddress(addressingMode));
+    sbc_value(bus->read(getAddress(addressingMode)));
+}
+
+void Cpu::sbc_value(unsigned char value)
+{
     unsigned short result = a - (value + (getCarry() ? 0 : 1));
     updateZeroAndNegativeFlag(result);
     
@@ -1288,12 +1317,13 @@ void Cpu::dey()
 }
 
 // Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
-void Cpu::inc(AddressingMode addressingMode)
+unsigned char Cpu::inc(AddressingMode addressingMode)
 {
     unsigned short addr = getAddress(addressingMode);
     unsigned char mem = bus->read(addr);
     bus->write_8(addr, mem + 1);
     updateZeroAndNegativeFlag(mem + 1);
+    return mem + 1;
 }
 
 // Adds one to the X register setting the zero and negative flags as appropriate.
@@ -1410,6 +1440,14 @@ void Cpu::arr(AddressingMode addressingMode)
     else
         status = status & 0b1011'1111; // clear overflow
 
+}
+
+// INC oper + SBC oper
+// Increase memory by one, then subtract memory from accu-mulator (with borrow).
+void Cpu::isc(AddressingMode addressingMode)
+{
+    unsigned char value = inc(addressingMode);
+    sbc_value(value);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
