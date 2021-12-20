@@ -668,6 +668,24 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0x83:
         execData->opCodeName = "*SAX";
         return sax(INDEXED_INDIRECT);
+    case 0xa7:
+        execData->opCodeName = "*LAX";
+        return lax(ZERO_PAGE);
+    case 0xb7:
+        execData->opCodeName = "*LAX";
+        return lax(ZERO_PAGE_Y);
+    case 0xaf:
+        execData->opCodeName = "*LAX";
+        return lax(ABSOLUTE);
+    case 0xbf:
+        execData->opCodeName = "*LAX";
+        return lax(ABSOLUTE_Y);
+    case 0xa3:
+        execData->opCodeName = "*LAX";
+        return lax(INDEXED_INDIRECT);
+    case 0xb3:
+        execData->opCodeName = "*LAX";
+        return lax(INDIRECT_INDEXED);
 
     default:
         if (opCode == 0x9f || opCode == 0x93) {
@@ -1290,6 +1308,16 @@ void Cpu::rra(AddressingMode addressingMode)
 void Cpu::sax(AddressingMode addressingMode)
 {
     bus->write_8(getAddress(addressingMode), a & x);
+}
+
+// LDA oper + LDX oper
+// Load accumulator and X register with memory.
+void Cpu::lax(AddressingMode addressingMode)
+{
+    unsigned char val = bus->read(getAddress(addressingMode));
+    x = val;
+    a = val;
+    updateZeroAndNegativeFlag(val);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

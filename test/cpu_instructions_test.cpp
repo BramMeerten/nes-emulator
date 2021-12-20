@@ -1271,3 +1271,18 @@ TEST_F(CpuTest, SAX)
   // then
   EXPECT_EQ(bus->read(0x12), 0b1000'0100); 
 }
+
+TEST_F(CpuTest, LAX)
+{
+  // given
+  bus->write_8(0x12, 0x85);
+  unsigned char data[3] = {0xa7, 0x12, 0x00}; // LAX $12;
+
+  // when
+  readData(data, 3);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0x85);
+  EXPECT_EQ(cpu->getX(), 0x85);
+  EXPECT_EQ(cpu->getStatus(), 0b1000'0000);
+}
