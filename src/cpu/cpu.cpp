@@ -711,6 +711,9 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0xd3:
         execData->opCodeName = "*DCP";
         return dcp(INDIRECT_INDEXED);
+    case 0x4b:
+        execData->opCodeName = "*ALR";
+        return alr(IMMEDIATE);
 
     default:
         if (opCode == 0x9f || opCode == 0x93) {
@@ -1356,6 +1359,14 @@ void Cpu::dcp(AddressingMode addressingMode)
 {
     unsigned char value = dec(addressingMode);
     cmp_value(value);
+}
+
+// AND oper + LSR
+// AND byte with accumulator, then shift right one bit in accumu-lator.
+void Cpu::alr(AddressingMode addressingMode)
+{
+    andOp(addressingMode);
+    lsr(ACCUMULATOR);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

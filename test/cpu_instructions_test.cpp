@@ -1314,3 +1314,16 @@ TEST_F(CpuTest, DCP_RESULT_SMALLER)
   EXPECT_EQ(bus->read(0x12), 0x14); 
   EXPECT_EQ(cpu->getStatus(), 0b1000'0000); // carry == 0
 }
+
+TEST_F(CpuTest, ALR)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0b1100'0100, 0x4b, 0b1010'1110, 0x00}; // LDA #c4; ALR #ae;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0b0100'0010);
+  EXPECT_EQ(cpu->getStatus(), 0b0000'0000); 
+}
