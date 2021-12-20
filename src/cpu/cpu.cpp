@@ -451,7 +451,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return cmp(ZERO_PAGE);
     case 0xc6:
         execData->opCodeName = "DEC";
-        return dec(ZERO_PAGE);
+        dec(ZERO_PAGE);
+        return;
     case 0xc8:
         execData->opCodeName = "INY";
         return iny();
@@ -469,7 +470,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return cmp(ABSOLUTE);
     case 0xce:
         execData->opCodeName = "DEC";
-        return dec(ABSOLUTE);
+        dec(ABSOLUTE);
+        return;
     case 0xd0:
         execData->opCodeName = "BNE";
         return bne();
@@ -481,7 +483,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return cmp(ZERO_PAGE_X);
     case 0xd6:
         execData->opCodeName = "DEC";
-        return dec(ZERO_PAGE_X);
+        dec(ZERO_PAGE_X);
+        return;
     case 0xd8:
         execData->opCodeName = "CLD";
         return cld();
@@ -493,7 +496,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return cmp(ABSOLUTE_X);
     case 0xde:
         execData->opCodeName = "DEC";
-        return dec(ABSOLUTE_X);
+        dec(ABSOLUTE_X);
+        return;
     case 0xe0:
         execData->opCodeName = "CPX";
         return cpx(IMMEDIATE);
@@ -686,6 +690,27 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0xb3:
         execData->opCodeName = "*LAX";
         return lax(INDIRECT_INDEXED);
+    case 0xc7:
+        execData->opCodeName = "*DCP";
+        return dcp(ZERO_PAGE);
+    case 0xd7:
+        execData->opCodeName = "*DCP";
+        return dcp(ZERO_PAGE_X);
+    case 0xcf:
+        execData->opCodeName = "*DCP";
+        return dcp(ABSOLUTE);
+    case 0xdf:
+        execData->opCodeName = "*DCP";
+        return dcp(ABSOLUTE_X);
+    case 0xdb:
+        execData->opCodeName = "*DCP";
+        return dcp(ABSOLUTE_Y);
+    case 0xc3:
+        execData->opCodeName = "*DCP";
+        return dcp(INDEXED_INDIRECT);
+    case 0xd3:
+        execData->opCodeName = "*DCP";
+        return dcp(INDIRECT_INDEXED);
 
     default:
         if (opCode == 0x9f || opCode == 0x93) {
@@ -1132,10 +1157,15 @@ void Cpu::tya()
 void Cpu::cmp(AddressingMode addressingMode)
 {
     unsigned char mem = bus->read(getAddress(addressingMode));
-    unsigned char result = a - mem;
+    cmp_value(mem);
+}
+
+void Cpu::cmp_value(unsigned char value)
+{
+    unsigned char result = a - value;
 
     // Set carry flag if A >= M
-    if (a >= mem) {
+    if (a >= value) {
         status = status | 0b0000'0001;
     } else {
         status = status & 0b1111'1110;
@@ -1224,12 +1254,13 @@ void Cpu::rti()
 }
 
 // Subtracts one from the value held at a specified memory location setting the zero and negative flags as appropriate.
-void Cpu::dec(AddressingMode addressingMode)
+unsigned char Cpu::dec(AddressingMode addressingMode)
 {
     unsigned short addr = getAddress(addressingMode);
     unsigned char mem = bus->read(addr);
     bus->write_8(addr, mem - 1);
     updateZeroAndNegativeFlag(mem - 1);
+    return mem - 1;
 }
 
 // Subtracts one from the X register setting the zero and negative flags as appropriate.
@@ -1318,6 +1349,13 @@ void Cpu::lax(AddressingMode addressingMode)
     x = val;
     a = val;
     updateZeroAndNegativeFlag(val);
+}
+
+// DEC oper + CMP oper
+void Cpu::dcp(AddressingMode addressingMode)
+{
+    unsigned char value = dec(addressingMode);
+    cmp_value(value);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

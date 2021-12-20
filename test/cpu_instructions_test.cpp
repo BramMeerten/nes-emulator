@@ -1269,7 +1269,7 @@ TEST_F(CpuTest, SAX)
   readData(data, 7);
 
   // then
-  EXPECT_EQ(bus->read(0x12), 0b1000'0100); 
+  EXPECT_EQ(bus->read(0x12), 0b1000'0100);
 }
 
 TEST_F(CpuTest, LAX)
@@ -1285,4 +1285,32 @@ TEST_F(CpuTest, LAX)
   EXPECT_EQ(cpu->getA(), 0x85);
   EXPECT_EQ(cpu->getX(), 0x85);
   EXPECT_EQ(cpu->getStatus(), 0b1000'0000);
+}
+
+TEST_F(CpuTest, DCP)
+{
+  // given
+  bus->write_8(0x12, 0x15);
+  unsigned char data[5] = {0xa9, 0x16, 0xc7, 0x12, 0x00}; // LDA #16; DCP $12;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(bus->read(0x12), 0x14); 
+  EXPECT_EQ(cpu->getStatus(), 0b0000'0001); // carry == 1
+}
+
+TEST_F(CpuTest, DCP_RESULT_SMALLER)
+{
+  // given
+  bus->write_8(0x12, 0x15);
+  unsigned char data[5] = {0xa9, 0x13, 0xc7, 0x12, 0x00}; // LDA #13; DCP $12;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(bus->read(0x12), 0x14); 
+  EXPECT_EQ(cpu->getStatus(), 0b1000'0000); // carry == 0
 }

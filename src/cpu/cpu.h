@@ -77,6 +77,7 @@ private:
     void txs();
     void tya();
     void cmp(AddressingMode addressingMode);
+    void cmp_value(unsigned char value);
     void cpx(AddressingMode addressingMode);
     void cpy(AddressingMode addressingMode);
     unsigned char lsr(AddressingMode addressingMode);
@@ -87,7 +88,7 @@ private:
     void pla();
     void plp();
     void rti();
-    void dec(AddressingMode addressingMode);
+    unsigned char dec(AddressingMode addressingMode);
     void dex();
     void dey();
     void inc(AddressingMode addressingMode);
@@ -100,6 +101,7 @@ private:
     void rra(AddressingMode AddressingMode);
     void sax(AddressingMode AddressingMode);
     void lax(AddressingMode AddressingMode);
+    void dcp(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 
