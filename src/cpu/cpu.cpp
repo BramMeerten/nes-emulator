@@ -207,7 +207,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return eor(ZERO_PAGE);
     case 0x46:
         execData->opCodeName = "LSR";
-        return lsr(ZERO_PAGE);
+        lsr(ZERO_PAGE);
+        return;
     case 0x48:
         execData->opCodeName = "PHA";
         return pha();
@@ -216,7 +217,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return eor(IMMEDIATE);
     case 0x4a:
         execData->opCodeName = "LSR";
-        return lsr(ACCUMULATOR);
+        lsr(ACCUMULATOR);
+        return;
     case 0x4c:
         execData->opCodeName = "JMP";
         return jmp(ABSOLUTE);
@@ -225,7 +227,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return eor(ABSOLUTE);
     case 0x4e:
         execData->opCodeName = "LSR";
-        return lsr(ABSOLUTE);
+        lsr(ABSOLUTE);
+        return;
     case 0x50:
         execData->opCodeName = "BVC";
         return bvc();
@@ -237,7 +240,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return eor(ZERO_PAGE_X);
     case 0x56:
         execData->opCodeName = "LSR";
-        return lsr(ZERO_PAGE_X);
+        lsr(ZERO_PAGE_X);
+        return;
     case 0x58:
         execData->opCodeName = "CLI";
         return cli();
@@ -249,7 +253,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return eor(ABSOLUTE_X);
     case 0x5e:
         execData->opCodeName = "LSR";
-        return lsr(ABSOLUTE_X);
+        lsr(ABSOLUTE_X);
+        return;
     case 0x60:
         execData->opCodeName = "RTS";
         return rts();
@@ -604,6 +609,27 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0x33:
         execData->opCodeName = "*RLA";
         return rla(INDIRECT_INDEXED);
+    case 0x47:
+        execData->opCodeName = "*SRE";
+        return sre(ZERO_PAGE);
+    case 0x57:
+        execData->opCodeName = "*SRE";
+        return sre(ZERO_PAGE_X);
+    case 0x4f:
+        execData->opCodeName = "*SRE";
+        return sre(ABSOLUTE);
+    case 0x5f:
+        execData->opCodeName = "*SRE";
+        return sre(ABSOLUTE_X);
+    case 0x5b:
+        execData->opCodeName = "*SRE";
+        return sre(ABSOLUTE_Y);
+    case 0x43:
+        execData->opCodeName = "*SRE";
+        return sre(INDEXED_INDIRECT);
+    case 0x53:
+        execData->opCodeName = "*SRE";
+        return sre(INDIRECT_INDEXED);
 
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
@@ -775,22 +801,25 @@ unsigned char Cpu::asl(AddressingMode addressingMode)
 }
 
 // Each of the bits in A or M is shift one place to the right. The bit that was in bit 0 is shifted into the carry flag. Bit 7 is set to zero.
-void Cpu::lsr(AddressingMode addressingMode)
+unsigned char Cpu::lsr(AddressingMode addressingMode)
 {
     unsigned char originalValue;
+    unsigned char modifiedValue;
     if (addressingMode == ACCUMULATOR) {
         originalValue = a;
         a = a >> 1;
-        updateZeroAndNegativeFlag(a);
+        modifiedValue = a;
         execData->address = "A";
     } else {
         unsigned short addr = getAddress(addressingMode);
         originalValue = bus->read(addr);
-        bus->write_8(addr, originalValue >> 1);
-        updateZeroAndNegativeFlag(originalValue >> 1);
+        modifiedValue = originalValue >> 1;
+        bus->write_8(addr, modifiedValue);
     }
 
+    updateZeroAndNegativeFlag(modifiedValue);
     status = (status & ~0x01) | (originalValue & 0x01); // set carry flag
+    return modifiedValue;
 }
 
 // Move each of the bits in either A or M one place to the left. Bit 0 is filled with the current value of the carry flag whilst the old bit 7 becomes the new carry flag value.
@@ -1188,6 +1217,15 @@ void Cpu::rla(AddressingMode addressingMode)
 {
     unsigned char val = rol(addressingMode);
     a = a & val;
+    updateZeroAndNegativeFlag(a);
+}
+
+// Shift right one bit in memory, then EOR accumulator with memory.
+// LSR oper + EOR oper
+void Cpu::sre(AddressingMode addressingMode)
+{
+    unsigned char val = lsr(addressingMode);
+    a = a ^ val;
     updateZeroAndNegativeFlag(a);
 }
 

@@ -336,7 +336,7 @@ TEST_F(CpuTest, LSR_zero_page)
 {
   // given
   bus->write_8(0x12, 0b0110'0110);
-  unsigned char data[4] = {0x38, 0x46, 0x12, 0x00}; // SEC; ASL $12;
+  unsigned char data[4] = {0x38, 0x46, 0x12, 0x00}; // SEC; LSR $12;
 
   // when
   readData(data, 4);
@@ -1228,4 +1228,19 @@ TEST_F(CpuTest, RLA)
   EXPECT_EQ(bus->read(0x12), 0b1100'1100);
   EXPECT_EQ(cpu->getA(), 0b0100'1000);
   EXPECT_EQ(cpu->getStatus() & 0x01, 1); // carry == 1
+}
+
+TEST_F(CpuTest, SRE)
+{
+  // given
+  bus->write_8(0x12, 0b0110'0110);
+  unsigned char data[6] = {0xa9, 0b1010'0011, 0x38, 0x47, 0x12, 0x00}; // LDA 0xa3; SEC; LSR $12;
+
+  // when
+  readData(data, 6);
+
+  // then
+  EXPECT_EQ(bus->read(0x12), 0b0011'0011);
+  EXPECT_EQ(cpu->getA(), 0b1001'0000);
+  EXPECT_EQ(cpu->getStatus() & 0x01, 0x00); // carry = 0
 }

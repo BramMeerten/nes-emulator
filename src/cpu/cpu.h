@@ -78,7 +78,7 @@ private:
     void cmp(AddressingMode addressingMode);
     void cpx(AddressingMode addressingMode);
     void cpy(AddressingMode addressingMode);
-    void lsr(AddressingMode addressingMode);
+    unsigned char lsr(AddressingMode addressingMode);
     void jsr();
     void rts();
     void pha();
@@ -95,6 +95,7 @@ private:
 
     void slo(AddressingMode AddressingMode);
     void rla(AddressingMode AddressingMode);
+    void sre(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 
