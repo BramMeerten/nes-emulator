@@ -266,7 +266,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(ZERO_PAGE);
     case 0x66:
         execData->opCodeName = "ROR";
-        return ror(ZERO_PAGE);
+        ror(ZERO_PAGE);
+        return;
     case 0x68:
         execData->opCodeName = "PLA";
         return pla();
@@ -275,7 +276,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(IMMEDIATE);
     case 0x6a:
         execData->opCodeName = "ROR";
-        return ror(ACCUMULATOR);
+        ror(ACCUMULATOR);
+        return;
     case 0x6c:
         execData->opCodeName = "JMP";
         return jmp(INDIRECT);
@@ -284,7 +286,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(ABSOLUTE);
     case 0x6e:
         execData->opCodeName = "ROR";
-        return ror(ABSOLUTE);
+        ror(ABSOLUTE);
+        return;
     case 0x70:
         execData->opCodeName = "BVS";
         return bvs();
@@ -296,7 +299,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(ZERO_PAGE_X);
     case 0x76:
         execData->opCodeName = "ROR";
-        return ror(ZERO_PAGE_X);
+        ror(ZERO_PAGE_X);
+        return;
     case 0x78:
         execData->opCodeName = "SEI";
         return sei();
@@ -308,7 +312,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return adc(ABSOLUTE_X);
     case 0x7e:
         execData->opCodeName = "ROR";
-        return ror(ABSOLUTE_X);
+        ror(ABSOLUTE_X);
+        return;
     case 0x81:
         execData->opCodeName = "STA";
         return sta(INDEXED_INDIRECT);
@@ -630,6 +635,27 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0x53:
         execData->opCodeName = "*SRE";
         return sre(INDIRECT_INDEXED);
+    case 0x67:
+        execData->opCodeName = "*RRA";
+        return rra(ZERO_PAGE);
+    case 0x77:
+        execData->opCodeName = "*RRA";
+        return rra(ZERO_PAGE_X);
+    case 0x6f:
+        execData->opCodeName = "*RRA";
+        return rra(ABSOLUTE);
+    case 0x7f:
+        execData->opCodeName = "*RRA";
+        return rra(ABSOLUTE_X);
+    case 0x7b:
+        execData->opCodeName = "*RRA";
+        return rra(ABSOLUTE_Y);
+    case 0x63:
+        execData->opCodeName = "*RRA";
+        return rra(INDEXED_INDIRECT);
+    case 0x73:
+        execData->opCodeName = "*RRA";
+        return rra(INDIRECT_INDEXED);
 
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
@@ -655,7 +681,11 @@ void Cpu::nop(AddressingMode addressingMode)
 // Adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
 void Cpu::adc(AddressingMode addressingMode)
 {
-    unsigned char value = bus->read(getAddress(addressingMode));
+    adc_value(bus->read(getAddress(addressingMode)));
+}
+
+void Cpu::adc_value(unsigned char value)
+{
     unsigned short result = a + value + getCarry();
     updateZeroAndNegativeFlag(result);
     updateCarryFlag(result);
@@ -846,23 +876,26 @@ unsigned char Cpu::rol(AddressingMode addressingMode)
 }
 
 // Move each of the bits in either A or M one place to the right. Bit 7 is filled with the current value of the carry flag whilst the old bit 0 becomes the new carry flag value.
-void Cpu::ror(AddressingMode addressingMode)
+unsigned char Cpu::ror(AddressingMode addressingMode)
 {
     unsigned char originalValue;
+    unsigned char modifiedValue;
     if (addressingMode == ACCUMULATOR) {
         originalValue = a;
         a = (a >> 1) | ((status & 0x01) << 7);
-        updateZeroAndNegativeFlag(a);
+        modifiedValue = a;
         execData->address = "A";
     } else {
         unsigned short address = getAddress(addressingMode);
         originalValue = bus->read(address);
-        bus->write_8(address, (originalValue >> 1) | ((status & 0x01) << 7));
-        updateZeroAndNegativeFlag((originalValue >> 1) | ((status & 0x01) << 7));
+        modifiedValue = (originalValue >> 1) | ((status & 0x01) << 7);
+        bus->write_8(address, modifiedValue);
     }
 
+    updateZeroAndNegativeFlag(modifiedValue);
     unsigned char newCarry = (originalValue & 0b0000'0001);
     status = (status & ~0x01) | newCarry; // set carry flag
+    return modifiedValue;
 }
 
 // The JSR instruction pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
@@ -1227,6 +1260,14 @@ void Cpu::sre(AddressingMode addressingMode)
     unsigned char val = lsr(addressingMode);
     a = a ^ val;
     updateZeroAndNegativeFlag(a);
+}
+
+// Rotate one bit right in memory, then add memory to accumulator (with carry).
+// ROR oper + ADC oper
+void Cpu::rra(AddressingMode addressingMode)
+{
+    unsigned char val = ror(addressingMode);
+    adc_value(val);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

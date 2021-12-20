@@ -39,6 +39,7 @@ private:
     void brk();
     void nop(AddressingMode addressingMode);
     void adc(AddressingMode addressingMode);
+    void adc_value(unsigned char);
     void sbc(AddressingMode addressingMode);
     void sec();
     void sed();
@@ -52,7 +53,7 @@ private:
     void eor(AddressingMode addressingMode);
     unsigned char asl(AddressingMode addressingMode);
     unsigned char rol(AddressingMode addressingMode);
-    void ror(AddressingMode addressingMode);
+    unsigned char ror(AddressingMode addressingMode);
     void clc();
     void cld();
     void cli();
@@ -96,6 +97,7 @@ private:
     void slo(AddressingMode AddressingMode);
     void rla(AddressingMode AddressingMode);
     void sre(AddressingMode AddressingMode);
+    void rra(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

@@ -1244,3 +1244,18 @@ TEST_F(CpuTest, SRE)
   EXPECT_EQ(cpu->getA(), 0b1001'0000);
   EXPECT_EQ(cpu->getStatus() & 0x01, 0x00); // carry = 0
 }
+
+TEST_F(CpuTest, RRA)
+{
+  // given
+  bus->write_8(0x12, 0b1110'0110);
+  unsigned char data[5] = {0xa9, 0x02, 0x67, 0x12, 0x00}; // LDA 0x02; RRA $12;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(bus->read(0x12), 0b0111'0011);
+  EXPECT_EQ(cpu->getA(), 0b0111'0101);
+  EXPECT_EQ(cpu->getStatus() & 0x01, 0); // carry == 0
+}
