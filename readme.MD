@@ -1,8 +1,10 @@
 # NES emulator
 Status: 
-* Running test ROM to find bugs in 6502 instruction set implementation
-* Finishing ROM to fully support iNES format
-* Cleanup
+* ✅ Implement official opcodes
+* ⚠️ Running test ROM to find bugs in 6502 instruction set implementation
+* ⚠️ Implement unofficial opcodes
+* ❌ Finishing ROM to fully support iNES format
+* ❌ Cleanup
 
 # Resources used
 * CPU instructions: http://www.obelisk.me.uk/6502/reference.html

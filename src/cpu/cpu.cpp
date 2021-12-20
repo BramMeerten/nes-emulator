@@ -64,7 +64,7 @@ void Cpu::run()
         delete execData;
 
         #ifdef NES_LOG_TEST
-            if (i++ > 4000)
+            if (i++ > 6000)
                 exit(0);
         #endif
     }
