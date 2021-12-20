@@ -1173,7 +1173,6 @@ TEST_F(CpuTest, DEY)
   EXPECT_EQ(cpu->getY(), 0x13);
 }
 
-
 TEST_F(CpuTest, INC)
 {
   // given
@@ -1199,4 +1198,19 @@ TEST_F(CpuTest, JMP)
 
   // then
   EXPECT_EQ(cpu->getA(), 0x13);
+}
+
+TEST_F(CpuTest, SLO)
+{
+  // given
+  bus->write_8(0x12, 0b0110'0110);
+  unsigned char data[5] = {0xa9, 0b0001'1010, 0x07, 0x12, 0x00}; // LDA #1a; ASL $12;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(bus->read(0x12), 0b1100'1100);
+  EXPECT_EQ(cpu->getA(), 0b1101'1110);
+  EXPECT_EQ(cpu->getStatus() & 0x01, 0x00); // carry = 0
 }

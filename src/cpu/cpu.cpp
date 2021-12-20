@@ -8,8 +8,8 @@
 #include "../bus.h"
 
 #define STOP_ON_BRK
-#define NES_LOG_TEST
-// #define INSTRUCTIONS_TEST
+// #define NES_LOG_TEST
+#define INSTRUCTIONS_TEST
 
 
 // Called when new cartridge inserted
@@ -89,7 +89,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return ora(ZERO_PAGE);
     case 0x06:
         execData->opCodeName = "ASL";
-        return asl(ZERO_PAGE);
+        asl(ZERO_PAGE);
+        return;
     case 0x08:
         execData->opCodeName = "PHP";
         return php();
@@ -98,13 +99,15 @@ void Cpu::execOpCode(unsigned char opCode)
         return ora(IMMEDIATE);
     case 0x0a:
         execData->opCodeName = "ASL";
-        return asl(ACCUMULATOR);
+        asl(ACCUMULATOR);
+        return;
     case 0x0d:
         execData->opCodeName = "ORA";
         return ora(ABSOLUTE);
     case 0x0e:
         execData->opCodeName = "ASL";
-        return asl(ABSOLUTE);
+        asl(ABSOLUTE);
+        return;
     case 0x10:
         execData->opCodeName = "BPL";
         return bpl();
@@ -116,7 +119,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return ora(ZERO_PAGE_X);
     case 0x16:
         execData->opCodeName = "ASL";
-        return asl(ZERO_PAGE_X);
+        asl(ZERO_PAGE_X);
+        return;
     case 0x18:
         execData->opCodeName = "CLC";
         return clc();
@@ -128,7 +132,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return ora(ABSOLUTE_X);
     case 0x1e:
         execData->opCodeName = "ASL";
-        return asl(ABSOLUTE_X);
+        asl(ABSOLUTE_X);
+        return;
     case 0x20:
         execData->opCodeName = "JSR";
         return jsr();
@@ -497,7 +502,7 @@ void Cpu::execOpCode(unsigned char opCode)
         return sbc(IMMEDIATE);
     case 0xea:
         execData->opCodeName = "NOP";
-        return nop();
+        return nop(IMPLIED);
     case 0xec:
         execData->opCodeName = "CPX";
         return cpx(ABSOLUTE);
@@ -531,6 +536,49 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0xfe:
         execData->opCodeName = "INC";
         return inc(ABSOLUTE_X);
+
+    // Illegal opcodes
+    case 0x1a: case 0x3a: case 0x5a: case 0x7a: case 0xda: case 0xfa: // NOP
+    case 0x02: case 0x12: case 0x22: case 0x32: case 0x42: case 0x52: case 0x62: case 0x72: case 0x92: case 0xB2: case 0xD2: case 0xF2: // JAM
+        execData->opCodeName = "*NOP";
+        return nop(IMPLIED);
+    case 0x80: case 0x82: case 0x89: case 0xc2: case 0xe2:
+        execData->opCodeName = "*NOP";
+        return nop(IMMEDIATE);
+    case 0x04: case 0x44: case 0x64:
+        execData->opCodeName = "*NOP";
+        return nop(ZERO_PAGE);
+    case 0x14: case 0x34: case 0x54: case 0x74: case 0xd4: case 0xf4:
+        execData->opCodeName = "*NOP";
+        return nop(ZERO_PAGE_X);
+    case 0x0c:
+        execData->opCodeName = "*NOP";
+        return nop(ABSOLUTE);
+    case 0x1c: case 0x3c: case 0x5c: case 0x7c: case 0xdc: case 0xfc:
+        execData->opCodeName = "*NOP";
+        return nop(ABSOLUTE_X);
+    case 0x07:
+        execData->opCodeName = "*SLO";
+        return slo(ZERO_PAGE);
+    case 0x17:
+        execData->opCodeName = "*SLO";
+        return slo(ZERO_PAGE_X);
+    case 0x0f:
+        execData->opCodeName = "*SLO";
+        return slo(ABSOLUTE);
+    case 0x1f:
+        execData->opCodeName = "*SLO";
+        return slo(ABSOLUTE_X);
+    case 0x1b:
+        execData->opCodeName = "*SLO";
+        return slo(ABSOLUTE_Y);
+    case 0x03:
+        execData->opCodeName = "*SLO";
+        return slo(INDEXED_INDIRECT);
+    case 0x13:
+        execData->opCodeName = "*SLO";
+        return slo(INDIRECT_INDEXED);
+
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         exit(1);
@@ -547,8 +595,9 @@ void Cpu::brk()
 }
 
 // The NOP instruction causes no changes to the processor other than the normal incrementing of the program counter to the next instruction.
-void Cpu::nop()
+void Cpu::nop(AddressingMode addressingMode)
 {
+    getAddress(addressingMode); // Because of illegal opcodes
 }
 
 // Adds the contents of a memory location to the accumulator together with the carry bit. If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
@@ -678,22 +727,26 @@ void Cpu::bit(AddressingMode addressingMode)
 }
 
 // This operation shifts all the bits of the accumulator or memory contents one bit left. Bit 0 is set to 0 and bit 7 is placed in the carry flag.
-void Cpu::asl(AddressingMode addressingMode)
+unsigned char Cpu::asl(AddressingMode addressingMode)
 {
     unsigned char originalValue;
+    unsigned char modifiedValue;
     if (addressingMode == ACCUMULATOR) {
         originalValue = a;
         a = a << 1;
+        modifiedValue = a;
         updateZeroAndNegativeFlag(a);
         execData->address = "A";
     } else {
         unsigned short addr = getAddress(addressingMode);
         originalValue = bus->read(addr);
-        bus->write_8(addr, originalValue << 1);
-        updateZeroAndNegativeFlag(originalValue << 1);
+        modifiedValue = originalValue << 1;
+        bus->write_8(addr, modifiedValue);
+        updateZeroAndNegativeFlag(modifiedValue);
     }
 
     status = (status & ~0x01) | (originalValue >> 7); // set carry flag
+    return modifiedValue;
 }
 
 // Each of the bits in A or M is shift one place to the right. The bit that was in bit 0 is shifted into the carry flag. Bit 7 is set to zero.
@@ -1092,6 +1145,15 @@ void Cpu::iny()
     updateZeroAndNegativeFlag(y);
 }
 
+// Shift left one bit in memory, then OR accumulator with memory.
+// Equivalent to ASL value then ORA value, except supporting more addressing modes. 
+void Cpu::slo(AddressingMode addressingMode)
+{
+    unsigned char val = asl(addressingMode);
+    a = a | val;
+    updateZeroAndNegativeFlag(a);
+}
+
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
 {
     updateZeroFlag(result);
@@ -1168,6 +1230,8 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
 
     switch (addressingMode)
     {
+    case IMPLIED:
+        return 0;
     case IMMEDIATE:
         out = pc;
         execData->param1 = {bus->read(pc)};

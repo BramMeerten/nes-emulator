@@ -37,7 +37,7 @@ private:
     void logLine();
 
     void brk();
-    void nop();
+    void nop(AddressingMode addressingMode);
     void adc(AddressingMode addressingMode);
     void sbc(AddressingMode addressingMode);
     void sec();
@@ -50,7 +50,7 @@ private:
     void andOp(AddressingMode addressingMode);
     void ora(AddressingMode addressingMode);
     void eor(AddressingMode addressingMode);
-    void asl(AddressingMode addressingMode);
+    unsigned char asl(AddressingMode addressingMode);
     void rol(AddressingMode addressingMode);
     void ror(AddressingMode addressingMode);
     void clc();
@@ -92,6 +92,8 @@ private:
     void inc(AddressingMode addressingMode);
     void inx();
     void iny();
+
+    void slo(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

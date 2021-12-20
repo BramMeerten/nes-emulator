@@ -1,5 +1,6 @@
 enum AddressingMode
 {
+    IMPLIED,
     IMMEDIATE,
     ZERO_PAGE,
     ZERO_PAGE_X,
