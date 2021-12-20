@@ -103,6 +103,7 @@ private:
     void lax(AddressingMode AddressingMode);
     void dcp(AddressingMode AddressingMode);
     void alr(AddressingMode AddressingMode);
+    void anc(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

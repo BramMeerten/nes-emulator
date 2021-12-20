@@ -714,6 +714,9 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0x4b:
         execData->opCodeName = "*ALR";
         return alr(IMMEDIATE);
+    case 0x0b: case 0x2b:
+        execData->opCodeName = "*ANC";
+        return anc(IMMEDIATE);
 
     default:
         if (opCode == 0x9f || opCode == 0x93) {
@@ -1367,6 +1370,16 @@ void Cpu::alr(AddressingMode addressingMode)
 {
     andOp(addressingMode);
     lsr(ACCUMULATOR);
+}
+
+// AND byte with accumulator. If result is negative then carry is set.
+void Cpu::anc(AddressingMode addressingMode)
+{
+    andOp(addressingMode);
+    if (a & (1 << 7))
+        status = status | 0b0000'0001;
+    else
+        status = status & 0b1111'1110;
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

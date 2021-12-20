@@ -1327,3 +1327,29 @@ TEST_F(CpuTest, ALR)
   EXPECT_EQ(cpu->getA(), 0b0100'0010);
   EXPECT_EQ(cpu->getStatus(), 0b0000'0000); 
 }
+
+TEST_F(CpuTest, ANC_SET_A)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0b1100'0100, 0x0b, 0b1010'1110, 0x00}; // LDA #c4; ANC #ae;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0b1000'0100);
+  EXPECT_EQ(cpu->getStatus(), 0b1000'0001); // carry = 1
+}
+
+TEST_F(CpuTest, ANC_CLEAR_A)
+{
+  // given
+  unsigned char data[5] = {0xa9, 0b0100'0100, 0x0b, 0b1010'1110, 0x00}; // LDA #c4; ANC #ae;
+
+  // when
+  readData(data, 5);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0b0000'0100);
+  EXPECT_EQ(cpu->getStatus(), 0b0000'0000); // carry = 0
+}
