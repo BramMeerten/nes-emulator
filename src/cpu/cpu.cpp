@@ -64,7 +64,7 @@ void Cpu::run()
         delete execData;
 
         #ifdef NES_LOG_TEST
-            if (i++ > 900)
+            if (i++ > 1400)
                 exit(0);
         #endif
     }
@@ -755,14 +755,14 @@ void Cpu::ror(AddressingMode addressingMode)
 void Cpu::jsr()
 {
     unsigned short address = getAddress(ABSOLUTE);
-    pushStack_16(pc);
+    pushStack_16(pc - 1);
     pc = address;
 }
 
 // The RTS instruction is used at the end of a subroutine to return to the calling routine. It pulls the program counter (minus one) from the stack.
 void Cpu::rts()
 {
-    pc = pullStack_16();
+    pc = pullStack_16() + 1;
 }
 
 // Set the carry flag to zero.
@@ -1012,7 +1012,7 @@ void Cpu::rti()
 {
     
     #ifdef NES_LOG_TEST
-        status = pullStack() & 0b1110'1111; // Not clearing 5 because of test log. Doesn't matter because register doesn't exist.
+        status = pullStack() & 0b1110'1111 | 0b0010'0000; // Not clearing 5 because of test log. Doesn't matter because register doesn't exist.
     #else
         status = pullStack() & 0b1100'1111; // bit 5 and 4 do not exist and should be ignored.
     #endif
@@ -1191,7 +1191,6 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         unsigned char addr = (bus->read(pc) + x) % 256;
         out = bus->read_16(addr);
         execData->param1 = {bus->read(pc)};
-        execData->param2 = {bus->read(pc+1)};
         break;
     }
     case INDIRECT_INDEXED:
@@ -1199,7 +1198,6 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         unsigned char addr = bus->read(pc);
         out = bus->read_16(addr) + y;
         execData->param1 = {bus->read(pc)};
-        execData->param2 = {bus->read(pc+1)};
         break;
     }
     default:
