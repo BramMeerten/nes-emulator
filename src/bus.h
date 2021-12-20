@@ -25,6 +25,7 @@ public:
     
     unsigned char read(unsigned short address);
     unsigned short read_16(unsigned short address);
+    unsigned short read_16_zero_page_wrap(unsigned short address);
     signed int read_signed(unsigned short address);
 
     void dump(unsigned short from, unsigned short to)

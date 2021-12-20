@@ -685,6 +685,7 @@ void Cpu::asl(AddressingMode addressingMode)
         originalValue = a;
         a = a << 1;
         updateZeroAndNegativeFlag(a);
+        execData->address = "A";
     } else {
         unsigned short addr = getAddress(addressingMode);
         originalValue = bus->read(addr);
@@ -703,6 +704,7 @@ void Cpu::lsr(AddressingMode addressingMode)
         originalValue = a;
         a = a >> 1;
         updateZeroAndNegativeFlag(a);
+        execData->address = "A";
     } else {
         unsigned short addr = getAddress(addressingMode);
         originalValue = bus->read(addr);
@@ -721,6 +723,7 @@ void Cpu::rol(AddressingMode addressingMode)
         originalValue = a;
         a = (a << 1) | (status & 0x01);
         updateZeroAndNegativeFlag(a);
+        execData->address = "A";
     } else {
         unsigned short address = getAddress(addressingMode);
         originalValue = bus->read(address);
@@ -740,6 +743,7 @@ void Cpu::ror(AddressingMode addressingMode)
         originalValue = a;
         a = (a >> 1) | ((status & 0x01) << 7);
         updateZeroAndNegativeFlag(a);
+        execData->address = "A";
     } else {
         unsigned short address = getAddress(addressingMode);
         originalValue = bus->read(address);
@@ -783,6 +787,7 @@ void Cpu::clv()
     status = status & 0b1011'1111;
 }
 
+// TODO: JMP has a bug in 6502 -> implement this quirk
 // Sets the program counter to the address specified by the operand.
 void Cpu::jmp(AddressingMode addressingMode)
 {
@@ -794,6 +799,7 @@ void Cpu::jmp(AddressingMode addressingMode)
 void Cpu::bcc()
 {
     execData->param1 = {bus->read_signed(pc)};
+    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
     if (getCarry() == 0)
         pc += bus->read_signed(pc);
     pc++;
@@ -803,6 +809,7 @@ void Cpu::bcc()
 void Cpu::bcs()
 {
     execData->param1 = {bus->read_signed(pc)};
+    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
     if (getCarry() == 1)
         pc += bus->read_signed(pc);
     pc++;
@@ -812,6 +819,7 @@ void Cpu::bcs()
 void Cpu::beq()
 {
     execData->param1 = {bus->read_signed(pc)};
+    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
     if (getZero() == 1)
         pc += bus->read_signed(pc);
     pc++;
@@ -821,6 +829,7 @@ void Cpu::beq()
 void Cpu::bne()
 {
     execData->param1 = {bus->read_signed(pc)};
+    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
     if (getZero() == 0)
         pc += bus->read_signed(pc);
     pc++;
@@ -830,6 +839,7 @@ void Cpu::bne()
 void Cpu::bmi()
 {
     execData->param1 = {bus->read_signed(pc)};
+    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
     if (getNegative() == 1)
         pc += bus->read_signed(pc);
     pc++;
@@ -839,6 +849,7 @@ void Cpu::bmi()
 void Cpu::bpl()
 {
     execData->param1 = {bus->read_signed(pc)};
+    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
     if (getNegative() == 0)
         pc += bus->read_signed(pc);
     pc++;
@@ -848,6 +859,7 @@ void Cpu::bpl()
 void Cpu::bvc()
 {
     execData->param1 = {bus->read_signed(pc)};
+    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
     if (getOverflow() == 0)
         pc += bus->read_signed(pc);
     pc++;
@@ -857,6 +869,7 @@ void Cpu::bvc()
 void Cpu::bvs()
 {
     execData->param1 = {bus->read_signed(pc)};
+    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
     if (getOverflow() == 1)
         pc += bus->read_signed(pc);
     pc++;
@@ -1144,10 +1157,12 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
     case IMMEDIATE:
         out = pc;
         execData->param1 = {bus->read(pc)};
+        execData->address = "#$" + ExecutionData::toHex(*execData->param1);
         break;
     case ZERO_PAGE:
         out = bus->read(pc);
         execData->param1 = {bus->read(pc)};
+        execData->address = "$" + ExecutionData::toHex(*execData->param1) + " = " + ExecutionData::toHex(bus->read(*execData->param1));
         break;
     case ZERO_PAGE_X:
         out = (bus->read(pc) + x) % 256;
@@ -1162,6 +1177,7 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         out = bus->read_16(pc);
         execData->param1 = {bus->read(pc)};
         execData->param2 = {bus->read(pc+1)};
+        execData->address = "$" + ExecutionData::toHex_16(out) + " = " + ExecutionData::toHex(bus->read(out));
         increment = 2;
         break;
     }
@@ -1188,8 +1204,9 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
     }
     case INDEXED_INDIRECT:
     {
-        unsigned char addr = (bus->read(pc) + x) % 256;
-        out = bus->read_16(addr);
+        unsigned char addr = (bus->read(pc) + x);
+        out = bus->read_16_zero_page_wrap(addr);
+        execData->address = "($" + ExecutionData::toHex(bus->read(pc)) + ",X) @ " + ExecutionData::toHex(addr) + " = " + ExecutionData::toHex_16(out) + " = " + ExecutionData::toHex(bus->read(out));
         execData->param1 = {bus->read(pc)};
         break;
     }

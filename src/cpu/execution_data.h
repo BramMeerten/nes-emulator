@@ -15,6 +15,7 @@ public:
     std::optional<unsigned char> param1;
     std::optional<unsigned char> param2;
     std::string opCodeName;
+    std::string address;
 
     ExecutionData(): param1(std::nullopt), param2(std::nullopt) {
     }
@@ -41,7 +42,14 @@ public:
         std::cout << std::setfill(' ') << std::left << std::setw(10) << opCodeFormatted.str();
 
         // Assembly
-        std::cout << std::setfill(' ') << std::left << std::setw(32) << opCodeName;
+        std::cout << std::setfill(' ') << std::left << std::setw(4) << opCodeName;
+
+        // Address
+        if (opCode == 0x4c || opCode == 0x20) { // Absolute JMP and JSR
+            std::cout << std::setfill(' ') << std::left << std::setw(28) << ("$" + toHex(*param2) + toHex(*param1));
+        } else {
+            std::cout << std::setfill(' ') << std::left << std::setw(28) << address;
+        }
 
         // Registers
         std::cout << "A:" << std::hex << toHex(a);
@@ -53,15 +61,14 @@ public:
         std::cout << std::endl;
     }
 
-private:
-    std::string toHex(unsigned char byte)
+    static std::string toHex(unsigned char byte)
     {
         std::ostringstream formatted;
         formatted << std::setfill('0') << std::setw(2) << std::uppercase << std::hex << (int) byte;
         return formatted.str();
     }
 
-    std::string toHex_16(unsigned short bytes)
+    static std::string toHex_16(unsigned short bytes)
     {
         std::ostringstream formatted;
         formatted << std::setfill('0') << std::setw(4) << std::uppercase << std::hex << bytes;

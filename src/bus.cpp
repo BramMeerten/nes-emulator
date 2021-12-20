@@ -45,6 +45,13 @@ unsigned short Bus::read_16(unsigned short address)
     return (p2 << 8) | p1;
 }
 
+unsigned short Bus::read_16_zero_page_wrap(unsigned short address)
+{
+    unsigned short p1 = memory[address % 256];
+    unsigned short p2 = memory[(address+1) % 256];
+    return (p2 << 8) | p1;
+}
+
 signed int Bus::read_signed(unsigned short address)
 {
     unsigned char value = read(address);
