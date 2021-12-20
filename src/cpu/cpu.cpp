@@ -787,11 +787,25 @@ void Cpu::clv()
     status = status & 0b1011'1111;
 }
 
-// TODO: JMP has a bug in 6502 -> implement this quirk
 // Sets the program counter to the address specified by the operand.
 void Cpu::jmp(AddressingMode addressingMode)
 {
-    unsigned short address = getAddress(addressingMode);
+    unsigned short address;
+
+    // 6502 does not correctly fetch the target address if the indirect vector falls on a page boundary (e.g. $xxFF where xx is any value from $00 to $FF). 
+    // In this case fetches the LSB from $xxFF as expected but takes the MSB from $xx00.
+    if (addressingMode == INDIRECT && bus->read(pc) == 0xff) {
+        unsigned short addr = bus->read_16(pc);
+        unsigned short p1 = bus->read(addr);
+        unsigned short p2 = bus->read(addr & 0xff00);
+        address = (p2 << 8) | p1;
+        execData->param1 = {bus->read(pc)};
+        execData->param2 = {bus->read(pc+1)};
+        execData->address = "($" + ExecutionData::toHex_16(addr) + ") = " + ExecutionData::toHex_16(address);
+    } else {
+        address = getAddress(addressingMode);
+    }
+    
     pc = address;
 }
 
@@ -1199,6 +1213,7 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         out = bus->read_16(addr);
         execData->param1 = {bus->read(pc)};
         execData->param2 = {bus->read(pc+1)};
+        execData->address = "($" + ExecutionData::toHex_16(addr) + ") = " + ExecutionData::toHex_16(out);
         increment = 2;
         break;
     }
