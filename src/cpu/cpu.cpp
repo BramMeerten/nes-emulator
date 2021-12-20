@@ -64,7 +64,7 @@ void Cpu::run()
         delete execData;
 
         #ifdef NES_LOG_TEST
-            if (i++ > 1400)
+            if (i++ > 4000)
                 exit(0);
         #endif
     }
@@ -1213,7 +1213,8 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
     case INDIRECT_INDEXED:
     {
         unsigned char addr = bus->read(pc);
-        out = bus->read_16(addr) + y;
+        out = bus->read_16_zero_page_wrap(addr) + y;
+        execData->address = "($" + ExecutionData::toHex(addr) + "),Y = " + ExecutionData::toHex_16(bus->read_16_zero_page_wrap(addr)) + " @ " + ExecutionData::toHex_16(out) + " = " + ExecutionData::toHex(bus->read(out));
         execData->param1 = {bus->read(pc)};
         break;
     }
