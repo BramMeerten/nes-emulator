@@ -670,7 +670,11 @@ void Cpu::execOpCode(unsigned char opCode)
         return sax(INDEXED_INDIRECT);
 
     default:
-        std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
+        if (opCode == 0x9f || opCode == 0x93) {
+            std::cout << "UNSTABLE OPCODE SHA: " << std::hex << (int)opCode << std::endl;
+        } else {
+            std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
+        }
         exit(1);
     }
 }
