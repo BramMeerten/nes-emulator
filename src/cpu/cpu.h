@@ -98,6 +98,7 @@ private:
     void rla(AddressingMode AddressingMode);
     void sre(AddressingMode AddressingMode);
     void rra(AddressingMode AddressingMode);
+    void sax(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

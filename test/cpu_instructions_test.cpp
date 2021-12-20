@@ -1259,3 +1259,15 @@ TEST_F(CpuTest, RRA)
   EXPECT_EQ(cpu->getA(), 0b0111'0101);
   EXPECT_EQ(cpu->getStatus() & 0x01, 0); // carry == 0
 }
+
+TEST_F(CpuTest, SAX)
+{
+  // given
+  unsigned char data[7] = {0xa9, 0b1100'0100, 0xa2, 0b1010'1110, 0x87, 0x12, 0x00}; // LDA #c4; LDX $ae; SAX $12;
+
+  // when
+  readData(data, 7);
+
+  // then
+  EXPECT_EQ(bus->read(0x12), 0b1000'0100); 
+}

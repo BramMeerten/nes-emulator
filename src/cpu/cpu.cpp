@@ -656,6 +656,18 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0x73:
         execData->opCodeName = "*RRA";
         return rra(INDIRECT_INDEXED);
+    case 0x87:
+        execData->opCodeName = "*SAX";
+        return sax(ZERO_PAGE);
+    case 0x97:
+        execData->opCodeName = "*SAX";
+        return sax(ZERO_PAGE_Y);
+    case 0x8f:
+        execData->opCodeName = "*SAX";
+        return sax(ABSOLUTE);
+    case 0x83:
+        execData->opCodeName = "*SAX";
+        return sax(INDEXED_INDIRECT);
 
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
@@ -1268,6 +1280,12 @@ void Cpu::rra(AddressingMode addressingMode)
 {
     unsigned char val = ror(addressingMode);
     adc_value(val);
+}
+
+// A and X are put on the bus at the same time (resulting effectively in an AND operation) and stored in M
+void Cpu::sax(AddressingMode addressingMode)
+{
+    bus->write_8(getAddress(addressingMode), a & x);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)
