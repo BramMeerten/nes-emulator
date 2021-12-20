@@ -1181,10 +1181,12 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
     case ZERO_PAGE_X:
         out = (bus->read(pc) + x) % 256;
         execData->param1 = {bus->read(pc)};
+        execData->address = "$" + ExecutionData::toHex(bus->read(pc)) + ",X @ " + ExecutionData::toHex(out) + " = " + ExecutionData::toHex(bus->read(out));
         break;
     case ZERO_PAGE_Y:
         out = (bus->read(pc) + y) % 256;
         execData->param1 = {bus->read(pc)};
+        execData->address = "$" + ExecutionData::toHex(bus->read(pc)) + ",Y @ " + ExecutionData::toHex(out) + " = " + ExecutionData::toHex(bus->read(out));
         break;
     case ABSOLUTE:
     {
@@ -1199,12 +1201,14 @@ unsigned short Cpu::getAddress(AddressingMode addressingMode)
         out = bus->read_16(pc) + x;
         execData->param1 = {bus->read(pc)};
         execData->param2 = {bus->read(pc+1)};
+        execData->address = "$" + ExecutionData::toHex_16(bus->read_16(pc)) + ",X @ " + ExecutionData::toHex_16(out) + " = " + ExecutionData::toHex(bus->read(out));
         increment = 2;
         break;
     case ABSOLUTE_Y:
         out = bus->read_16(pc) + y;
         execData->param1 = {bus->read(pc)};
         execData->param2 = {bus->read(pc+1)};
+        execData->address = "$" + ExecutionData::toHex_16(bus->read_16(pc)) + ",Y @ " + ExecutionData::toHex_16(out) + " = " + ExecutionData::toHex(bus->read(out));
         increment = 2;
         break;
     case INDIRECT: 
