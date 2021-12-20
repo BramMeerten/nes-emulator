@@ -51,7 +51,7 @@ private:
     void ora(AddressingMode addressingMode);
     void eor(AddressingMode addressingMode);
     unsigned char asl(AddressingMode addressingMode);
-    void rol(AddressingMode addressingMode);
+    unsigned char rol(AddressingMode addressingMode);
     void ror(AddressingMode addressingMode);
     void clc();
     void cld();
@@ -94,6 +94,7 @@ private:
     void iny();
 
     void slo(AddressingMode AddressingMode);
+    void rla(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 

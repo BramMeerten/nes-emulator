@@ -148,7 +148,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ZERO_PAGE);
     case 0x26:
         execData->opCodeName = "ROL";
-        return rol(ZERO_PAGE);
+        rol(ZERO_PAGE);
+        return;
     case 0x28:
         execData->opCodeName = "PLP";
         return plp();
@@ -157,7 +158,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(IMMEDIATE);
     case 0x2a:
         execData->opCodeName = "ROL";
-        return rol(ACCUMULATOR);
+        rol(ACCUMULATOR);
+        return;
     case 0x2c:
         execData->opCodeName = "BIT";
         return bit(ABSOLUTE);
@@ -166,7 +168,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ABSOLUTE);
     case 0x2e:
         execData->opCodeName = "ROL";
-        return rol(ABSOLUTE);
+        rol(ABSOLUTE);
+        return;
     case 0x30:
         execData->opCodeName = "BMI";
         return bmi();
@@ -178,7 +181,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ZERO_PAGE_X);
     case 0x36:
         execData->opCodeName = "ROL";
-        return rol(ZERO_PAGE_X);
+        rol(ZERO_PAGE_X);
+        return;
     case 0x38:
         execData->opCodeName = "SEC";
         return sec();
@@ -190,7 +194,8 @@ void Cpu::execOpCode(unsigned char opCode)
         return andOp(ABSOLUTE_X);
     case 0x3e:
         execData->opCodeName = "ROL";
-        return rol(ABSOLUTE_X);
+        rol(ABSOLUTE_X);
+        return;
     case 0x40:
         execData->opCodeName = "RTI";
         return rti();
@@ -578,6 +583,27 @@ void Cpu::execOpCode(unsigned char opCode)
     case 0x13:
         execData->opCodeName = "*SLO";
         return slo(INDIRECT_INDEXED);
+    case 0x27:
+        execData->opCodeName = "*RLA";
+        return rla(ZERO_PAGE);
+    case 0x37:
+        execData->opCodeName = "*RLA";
+        return rla(ZERO_PAGE_X);
+    case 0x2f:
+        execData->opCodeName = "*RLA";
+        return rla(ABSOLUTE);
+    case 0x3f:
+        execData->opCodeName = "*RLA";
+        return rla(ABSOLUTE_X);
+    case 0x3b:
+        execData->opCodeName = "*RLA";
+        return rla(ABSOLUTE_Y);
+    case 0x23:
+        execData->opCodeName = "*RLA";
+        return rla(INDEXED_INDIRECT);
+    case 0x33:
+        execData->opCodeName = "*RLA";
+        return rla(INDIRECT_INDEXED);
 
     default:
         std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
@@ -735,16 +761,15 @@ unsigned char Cpu::asl(AddressingMode addressingMode)
         originalValue = a;
         a = a << 1;
         modifiedValue = a;
-        updateZeroAndNegativeFlag(a);
         execData->address = "A";
     } else {
         unsigned short addr = getAddress(addressingMode);
         originalValue = bus->read(addr);
         modifiedValue = originalValue << 1;
         bus->write_8(addr, modifiedValue);
-        updateZeroAndNegativeFlag(modifiedValue);
     }
 
+    updateZeroAndNegativeFlag(modifiedValue);
     status = (status & ~0x01) | (originalValue >> 7); // set carry flag
     return modifiedValue;
 }
@@ -769,23 +794,26 @@ void Cpu::lsr(AddressingMode addressingMode)
 }
 
 // Move each of the bits in either A or M one place to the left. Bit 0 is filled with the current value of the carry flag whilst the old bit 7 becomes the new carry flag value.
-void Cpu::rol(AddressingMode addressingMode)
+unsigned char Cpu::rol(AddressingMode addressingMode)
 {
     unsigned char originalValue;
+    unsigned char modifiedValue;
     if (addressingMode == ACCUMULATOR) {
         originalValue = a;
         a = (a << 1) | (status & 0x01);
-        updateZeroAndNegativeFlag(a);
+        modifiedValue = a;
         execData->address = "A";
     } else {
         unsigned short address = getAddress(addressingMode);
         originalValue = bus->read(address);
-        bus->write_8(address, (originalValue << 1) | (status & 0x01));
-        updateZeroAndNegativeFlag((originalValue << 1) | (status & 0x01));
+        modifiedValue = (originalValue << 1) | (status & 0x01);
+        bus->write_8(address, modifiedValue);
     }
 
+    updateZeroAndNegativeFlag(modifiedValue);
     unsigned char newCarry = (originalValue & 0b1000'0000) >> 7;
     status = (status & ~0x01) | newCarry; // set carry flag
+    return modifiedValue;
 }
 
 // Move each of the bits in either A or M one place to the right. Bit 7 is filled with the current value of the carry flag whilst the old bit 0 becomes the new carry flag value.
@@ -866,7 +894,7 @@ void Cpu::jmp(AddressingMode addressingMode)
 void Cpu::bcc()
 {
     execData->param1 = {bus->read_signed(pc)};
-    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
+    execData->address = "$" + ExecutionData::toHex_16(pc + bus->read_signed(pc) + 1);
     if (getCarry() == 0)
         pc += bus->read_signed(pc);
     pc++;
@@ -876,7 +904,7 @@ void Cpu::bcc()
 void Cpu::bcs()
 {
     execData->param1 = {bus->read_signed(pc)};
-    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
+    execData->address = "$" + ExecutionData::toHex_16(pc + bus->read_signed(pc) + 1);
     if (getCarry() == 1)
         pc += bus->read_signed(pc);
     pc++;
@@ -886,7 +914,7 @@ void Cpu::bcs()
 void Cpu::beq()
 {
     execData->param1 = {bus->read_signed(pc)};
-    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
+    execData->address = "$" + ExecutionData::toHex_16(pc + bus->read_signed(pc) + 1);
     if (getZero() == 1)
         pc += bus->read_signed(pc);
     pc++;
@@ -896,7 +924,7 @@ void Cpu::beq()
 void Cpu::bne()
 {
     execData->param1 = {bus->read_signed(pc)};
-    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
+    execData->address = "$" + ExecutionData::toHex_16(pc + bus->read_signed(pc) + 1);
     if (getZero() == 0)
         pc += bus->read_signed(pc);
     pc++;
@@ -906,7 +934,7 @@ void Cpu::bne()
 void Cpu::bmi()
 {
     execData->param1 = {bus->read_signed(pc)};
-    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
+    execData->address = "$" + ExecutionData::toHex_16(pc + bus->read_signed(pc) + 1);
     if (getNegative() == 1)
         pc += bus->read_signed(pc);
     pc++;
@@ -916,7 +944,7 @@ void Cpu::bmi()
 void Cpu::bpl()
 {
     execData->param1 = {bus->read_signed(pc)};
-    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
+    execData->address = "$" + ExecutionData::toHex_16(pc + bus->read_signed(pc) + 1);
     if (getNegative() == 0)
         pc += bus->read_signed(pc);
     pc++;
@@ -926,7 +954,7 @@ void Cpu::bpl()
 void Cpu::bvc()
 {
     execData->param1 = {bus->read_signed(pc)};
-    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
+    execData->address = "$" + ExecutionData::toHex_16(pc + bus->read_signed(pc) + 1);
     if (getOverflow() == 0)
         pc += bus->read_signed(pc);
     pc++;
@@ -936,7 +964,7 @@ void Cpu::bvc()
 void Cpu::bvs()
 {
     execData->param1 = {bus->read_signed(pc)};
-    execData->address = "$" + ExecutionData::toHex_16(pc + *execData->param1 + 1);
+    execData->address = "$" + ExecutionData::toHex_16(pc + bus->read_signed(pc) + 1);
     if (getOverflow() == 1)
         pc += bus->read_signed(pc);
     pc++;
@@ -1146,11 +1174,20 @@ void Cpu::iny()
 }
 
 // Shift left one bit in memory, then OR accumulator with memory.
-// Equivalent to ASL value then ORA value, except supporting more addressing modes. 
+// ASL oper + ORA oper
 void Cpu::slo(AddressingMode addressingMode)
 {
     unsigned char val = asl(addressingMode);
     a = a | val;
+    updateZeroAndNegativeFlag(a);
+}
+
+// Rotate one bit left in memory, then AND accumulator with memory.
+// ROL oper + AND oper
+void Cpu::rla(AddressingMode addressingMode)
+{
+    unsigned char val = rol(addressingMode);
+    a = a & val;
     updateZeroAndNegativeFlag(a);
 }
 

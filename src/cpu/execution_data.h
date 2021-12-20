@@ -39,10 +39,10 @@ public:
         opCodeFormatted << toHex(opCode);
         if (param1) opCodeFormatted << ' ' << toHex(*param1);
         if (param2) opCodeFormatted << ' ' << toHex(*param2);
-        std::cout << std::setfill(' ') << std::left << std::setw(10) << opCodeFormatted.str();
+        std::cout << std::setfill(' ') << std::left << std::setw(9) << opCodeFormatted.str();
 
         // Assembly
-        std::cout << std::setfill(' ') << std::left << std::setw(4) << opCodeName;
+        std::cout << (opCodeName.length() == 3 ? " " : "") << std::setfill(' ') << std::left << std::setw(4) << opCodeName << (opCodeName.length() == 3 ? "" : " ");
 
         // Address
         if (opCode == 0x4c || opCode == 0x20) { // Absolute JMP and JSR
