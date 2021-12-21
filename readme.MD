@@ -4,8 +4,9 @@ Status:
 * ⚠️ Running test ROM to find bugs in 6502 instruction set implementation
 * ✅ Implement unofficial opcodes
 * ❌ Finishing ROM to fully support iNES format
-* ❌ Cleanup
+* ❌ Cycles
 * ❌ PPU
+* ❌ APU
 
 # Resources used
 * CPU instructions: http://www.obelisk.me.uk/6502/reference.html
