@@ -64,7 +64,7 @@ void Cpu::run()
         delete execData;
 
         #ifdef NES_LOG_TEST
-            if (i++ > 6000)
+            if (i++ > 8989)
                 exit(0);
         #endif
     }
@@ -566,7 +566,6 @@ void Cpu::execOpCode(unsigned char opCode)
         execData->opCodeName = "*NOP";
         return nop(IMPLIED);
     case 0x80: case 0x82: case 0x89: case 0xc2: case 0xe2:
-    case 0x8b: // ANE
         execData->opCodeName = "*NOP";
         return nop(IMMEDIATE);
     case 0x04: case 0x44: case 0x64:
@@ -726,30 +725,46 @@ void Cpu::execOpCode(unsigned char opCode)
         execData->opCodeName = "*ARR";
         return arr(IMMEDIATE);
     case 0xe7:
-        execData->opCodeName = "*ISC";
-        return isc(ZERO_PAGE);
+        execData->opCodeName = "*ISB";
+        return isb(ZERO_PAGE);
     case 0xf7:
-        execData->opCodeName = "*ISC";
-        return isc(ZERO_PAGE_X);
+        execData->opCodeName = "*ISB";
+        return isb(ZERO_PAGE_X);
     case 0xef:
-        execData->opCodeName = "*ISC";
-        return isc(ABSOLUTE);
+        execData->opCodeName = "*ISB";
+        return isb(ABSOLUTE);
     case 0xff:
-        execData->opCodeName = "*ISC";
-        return isc(ABSOLUTE_X);
+        execData->opCodeName = "*ISB";
+        return isb(ABSOLUTE_X);
     case 0xfb:
-        execData->opCodeName = "*ISC";
-        return isc(ABSOLUTE_Y);
+        execData->opCodeName = "*ISB";
+        return isb(ABSOLUTE_Y);
     case 0xe3:
-        execData->opCodeName = "*ISC";
-        return isc(INDEXED_INDIRECT);
+        execData->opCodeName = "*ISB";
+        return isb(INDEXED_INDIRECT);
     case 0xf3:
-        execData->opCodeName = "*ISC";
-        return isc(INDIRECT_INDEXED);
+        execData->opCodeName = "*ISB";
+        return isb(INDIRECT_INDEXED);
+    case 0xeb:
+        execData->opCodeName = "*SBC";
+        return sbc(IMMEDIATE);
+    case 0xbb:
+        execData->opCodeName = "*LAS";
+        return las(ABSOLUTE_Y);
 
     default:
         if (opCode == 0x9f || opCode == 0x93) {
             std::cout << "UNSTABLE OPCODE SHA: " << std::hex << (int)opCode << std::endl;
+        } else if (opCode == 0x9e) {
+            std::cout << "UNSTABLE OPCODE SHX: " << std::hex << (int)opCode << std::endl;
+        } else if (opCode == 0x9c) {
+            std::cout << "UNSTABLE OPCODE SHY: " << std::hex << (int)opCode << std::endl;
+        } else if (opCode == 0x8b) {
+            std::cout << "UNSTABLE OPCODE ANE: " << std::hex << (int)opCode << std::endl;
+        } else if (opCode == 0xab) {
+            std::cout << "UNSTABLE OPCODE LXA: " << std::hex << (int)opCode << std::endl;
+        } else if (opCode == 0x9b) {
+            std::cout << "UNSTABLE OPCODE TAS: " << std::hex << (int)opCode << std::endl;
         } else {
             std::cout << "UNKNOWN OPCODE: " << std::hex << (int)opCode << std::endl;
         }
@@ -1444,10 +1459,21 @@ void Cpu::arr(AddressingMode addressingMode)
 
 // INC oper + SBC oper
 // Increase memory by one, then subtract memory from accu-mulator (with borrow).
-void Cpu::isc(AddressingMode addressingMode)
+void Cpu::isb(AddressingMode addressingMode)
 {
     unsigned char value = inc(addressingMode);
     sbc_value(value);
+}
+
+// AND memory with stack pointer, transfer result to accu-mulator, X register and stack pointer.
+void Cpu::las(AddressingMode addressingMode)
+{
+    unsigned char mem = bus->read(getAddress(addressingMode));
+    unsigned char result = mem & sp;
+    a = result;
+    x = result;
+    sp = result;
+    updateZeroAndNegativeFlag(result);
 }
 
 void Cpu::updateZeroAndNegativeFlag(unsigned char result)

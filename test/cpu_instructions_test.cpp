@@ -1406,11 +1406,11 @@ TEST_F(CpuTest, ARR_RESULT_11)
   EXPECT_EQ(cpu->getStatus(), 0b0000'0001); // c=1, v=0
 }
 
-TEST_F(CpuTest, ISC)
+TEST_F(CpuTest, ISB)
 {
   // given
   bus->write_8(0x12, 0x24);
-  unsigned char data[5] = {0xa9, 0x27, 0xe7, 0x12, 0x00}; // LDA 0x27; ISC $12;
+  unsigned char data[5] = {0xa9, 0x27, 0xe7, 0x12, 0x00}; // LDA 0x27; ISB $12;
 
   // when
   readData(data, 5);
@@ -1419,4 +1419,21 @@ TEST_F(CpuTest, ISC)
   EXPECT_EQ(bus->read(0x12), 0x25);
   EXPECT_EQ(cpu->getA(), 0x01); // because of overflow
   EXPECT_EQ(cpu->getStatus() & 0x01, 1); // carry == 1
+}
+
+TEST_F(CpuTest, LAS)
+{
+  // given
+  // SP = 0xFD = 0b1111'1101
+  bus->write_8(0x1234, 0b1001'0111);
+  unsigned char data[4] = {0xbb, 0x34, 0x12, 0x00}; // LAS $1234,Y;
+
+  // when
+  readData(data, 4);
+
+  // then
+  EXPECT_EQ(cpu->getA(), 0b1001'0101);
+  EXPECT_EQ(cpu->getX(), 0b1001'0101);
+  EXPECT_EQ(cpu->getSP(), 0b1001'0101);
+  EXPECT_EQ(cpu->getStatus(), 0b1000'0000); // n=1
 }

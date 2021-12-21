@@ -106,7 +106,8 @@ private:
     void alr(AddressingMode AddressingMode);
     void anc(AddressingMode AddressingMode);
     void arr(AddressingMode AddressingMode);
-    void isc(AddressingMode AddressingMode);
+    void isb(AddressingMode AddressingMode);
+    void las(AddressingMode AddressingMode);
 
     unsigned short getAddress(AddressingMode addressingMode);
 
