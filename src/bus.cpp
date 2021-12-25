@@ -22,33 +22,54 @@ void Bus::write(unsigned short address, unsigned char data[], int length)
 
 void Bus::write_8(unsigned short address, unsigned char byte)
 {
-    memory[address] = byte;
+    if (address == 0x2000)
+        ppu->setControl(byte);
+    else if (address == 0x2001)
+        ppu->setMask(byte);
+    else if (address == 0x2003)
+        ppu->setOamAddress(byte);
+    else if (address == 0x2004)
+        ppu->setOamData(byte);
+    else if (address == 0x2005)
+        ppu->setScroll(byte);
+    else if (address == 0x2006)
+        ppu->setAddress(byte);
+    else if (address == 0x2007)
+        ppu->setData(byte);
+    else if (address == 0x4014)
+        ppu->setOamData(byte);
+    else 
+        memory[address] = byte; // TODO check if is RAM address
 }
 
 // 16-bit values are stored in little-endian
 void Bus::write_16(unsigned short address, unsigned short data)
 {
-    memory[address] = data & 0x00ff;
-    memory[address + 1] = (data & 0xff00) >> 8;
+    write_8(address, data & 0x00ff);
+    write_8(address + 1, (data & 0xff00) >> 8);
 }
 
 unsigned char Bus::read(unsigned short address)
 {
-    return memory[address];
+    if (address == 0x2000 || address == 0x2001 || address == 0x2003 || address == 0x2005 || address == 0x2006 || address == 0x4014) {
+        std::cout << "Read from PPU register " << std::hex << (int) address << "not allowed.";
+        exit(1); // TODO exception
+    }
+    return memory[address]; // TODO mirrors
 }
 
 // 16-bit values are stored in little-endian
 unsigned short Bus::read_16(unsigned short address)
 {
-    unsigned short p1 = memory[address]; 
-    unsigned short p2 = memory[address+1];
+    unsigned short p1 = read(address); 
+    unsigned short p2 = read(address+1);
     return (p2 << 8) | p1;
 }
 
 unsigned short Bus::read_16_zero_page_wrap(unsigned short address)
 {
-    unsigned short p1 = memory[address % 256];
-    unsigned short p2 = memory[(address+1) % 256];
+    unsigned short p1 = read(address % 256);
+    unsigned short p2 = read((address+1) % 256);
     return (p2 << 8) | p1;
 }
 

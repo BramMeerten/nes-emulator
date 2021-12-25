@@ -7,7 +7,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-file(GLOB SRCS cpu_instructions_test.cpp cpu_addressing_mode_test.cpp memory_test.cpp cpu_twos_complement_test.cpp)
+file(GLOB SRCS cpu_instructions_test.cpp cpu_addressing_mode_test.cpp memory_test.cpp cpu_twos_complement_test.cpp ppu_register_test.cpp)
 add_executable( NES_TEST ${SRCS} )
 target_link_libraries( NES_TEST NES_LIB gtest_main )
 
